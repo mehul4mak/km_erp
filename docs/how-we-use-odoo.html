@@ -1,0 +1,480 @@
+<title>How MixerWorks Uses Odoo — an engineering primer</title>
+<style>
+  :root {
+    --paper: #f4f0e8; --surface: #fffdf8; --surface-2: #f8f4eb; --code-bg: #24201a;
+    --code-ink: #ece3d3; --ink: #201c15; --ink-soft: #574f43; --ink-faint: #8a8072;
+    --line: #e2dac9; --line-strong: #cec3ae; --copper: #b0642c; --copper-deep: #8f4e1c;
+    --copper-wash: #f2e5d4; --steel: #46606d; --steel-wash: #e6edf0; --verified: #2e7a50;
+    --violet: #6b5ca8;
+    --shadow: 0 1px 2px rgba(32,28,21,.05), 0 14px 34px -20px rgba(32,28,21,.30);
+    --font-display: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #15120d; --surface: #1d1912; --surface-2: #221d15; --code-bg: #0f0d09;
+      --code-ink: #e4dccd; --ink: #efe9dc; --ink-soft: #b1a795; --ink-faint: #7c7565;
+      --line: #322b20; --line-strong: #463d2d; --copper: #d38a4f; --copper-deep: #c1783c;
+      --copper-wash: #2a2013; --steel: #85a1ad; --steel-wash: #17222a; --verified: #59ac7c;
+      --violet: #9d8fd6;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 36px -20px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="light"]{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--code-bg:#24201a;--code-ink:#ece3d3;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#46606d;--steel-wash:#e6edf0;--verified:#2e7a50;--violet:#6b5ca8;--shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);}
+  :root[data-theme="dark"]{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--code-bg:#0f0d09;--code-ink:#e4dccd;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#85a1ad;--steel-wash:#17222a;--verified:#59ac7c;--violet:#9d8fd6;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans);
+    line-height: 1.62; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* top band */
+  .topband { border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 20; }
+  .topband .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 24px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand .mark { font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em; font-size: 16px; }
+  .brand .mark b { color: var(--copper); }
+  .brand .sub { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .themebtn { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-soft); background: transparent; border: 1px solid var(--line-strong); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer; }
+  .themebtn:hover { border-color: var(--copper); color: var(--copper); }
+  .themebtn:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+
+  /* hero */
+  .hero { padding: 56px 0 30px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--copper); font-weight: 600; display: flex; align-items: center; gap: 12px; }
+  .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--line-strong); max-width: 140px; }
+  h1 { font-family: var(--font-display); font-weight: 800; letter-spacing: -.03em;
+    font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.05; margin: 16px 0 0; text-wrap: balance; max-width: 20ch; }
+  .lede { font-size: 1.14rem; color: var(--ink-soft); margin: 18px 0 0; max-width: 64ch; }
+
+  /* layout with sticky TOC */
+  .doc { display: grid; grid-template-columns: 210px 1fr; gap: 48px; padding: 20px 0 60px; align-items: start; }
+  @media (max-width: 860px) { .doc { grid-template-columns: 1fr; gap: 0; } .toc { display: none; } }
+  .toc { position: sticky; top: 70px; font-family: var(--font-mono); font-size: 12.5px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; counter-reset: t; }
+  .toc a { display: flex; gap: 10px; padding: 5px 8px; border-radius: 5px; color: var(--ink-soft);
+    text-decoration: none; border-left: 2px solid transparent; }
+  .toc a::before { counter-increment: t; content: counter(t, decimal-leading-zero); color: var(--ink-faint); }
+  .toc a:hover { background: var(--surface-2); color: var(--copper); }
+
+  article > section { padding: 14px 0 30px; border-top: 1px solid var(--line); margin-top: 26px; }
+  article > section:first-child { border-top: none; margin-top: 0; }
+  .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--copper); font-weight: 600; margin: 0 0 6px; }
+  h2 { font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em;
+    font-size: clamp(1.4rem, 3.2vw, 1.9rem); margin: 0 0 14px; text-wrap: balance; }
+  h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.12rem; margin: 26px 0 8px; letter-spacing: -.01em; }
+  p { color: var(--ink-soft); max-width: 68ch; margin: 0 0 14px; }
+  .ink { color: var(--ink); font-weight: 600; }
+  strong { color: var(--ink); }
+  code:not(pre code) { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2);
+    border: 1px solid var(--line); padding: .08em .38em; border-radius: 4px; color: var(--copper-deep); white-space: nowrap; }
+  a.ref { color: var(--copper); text-decoration: none; border-bottom: 1px solid var(--line-strong); }
+
+  /* code block */
+  pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 18px 20px;
+    overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; margin: 6px 0 16px;
+    box-shadow: var(--shadow); }
+  pre .c { color: #8f8674; font-style: italic; }
+  pre .k { color: #d99a5e; }
+  pre .s { color: #9dc08b; }
+  pre .n { color: #c98f6d; }
+  pre .p { color: #cfc6b4; }
+  .codecap { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 20px 0 4px; display: flex; gap: 8px; align-items: center; }
+  .codecap::before { content: ""; width: 14px; height: 1px; background: var(--copper); }
+
+  /* callout */
+  .note { background: var(--surface-2); border: 1px solid var(--line); border-left: 3px solid var(--steel);
+    border-radius: 5px; padding: 14px 18px; margin: 16px 0; }
+  .note.copper { border-left-color: var(--copper); }
+  .note .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--steel); font-weight: 700; display: block; margin-bottom: 5px; }
+  .note.copper .tag { color: var(--copper-deep); }
+  .note p { margin: 0; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; margin: 6px 0 18px; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; background: var(--surface); }
+  th, td { text-align: left; padding: 11px 15px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; background: var(--surface-2); position: sticky; top: 0; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.m { font-family: var(--font-mono); font-size: .85rem; color: var(--copper-deep); white-space: nowrap; font-weight: 600; }
+  td.small { font-size: .9rem; }
+
+  /* pipeline diagram */
+  .flow { display: grid; gap: 0; margin: 8px 0 18px; }
+  .flow .step { display: grid; grid-template-columns: 40px 1fr; gap: 16px; }
+  .flow .rail { display: flex; flex-direction: column; align-items: center; }
+  .flow .dot { width: 30px; height: 30px; border-radius: 50%; flex: none; display: grid; place-items: center;
+    font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: #fff; background: var(--copper); z-index: 1; }
+  .flow .dot.steel { background: var(--steel); }
+  .flow .dot.violet { background: var(--violet); }
+  .flow .dot.good { background: var(--verified); }
+  .flow .line { width: 2px; flex: 1; background: var(--line-strong); min-height: 14px; }
+  .flow .body { padding-bottom: 20px; }
+  .flow .body b { font-family: var(--font-display); font-size: 1.02rem; }
+  .flow .body .meta { font-family: var(--font-mono); font-size: .8rem; color: var(--ink-faint); margin-top: 2px; }
+  .flow .body p { margin: 6px 0 0; font-size: .95rem; }
+  .flow .step:last-child .line { display: none; }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 6px 0 14px; }
+  @media (max-width: 620px) { .two { grid-template-columns: 1fr; } table { min-width: 480px; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; }
+  .card h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 1.02rem; }
+  .card p { margin: 0; font-size: .93rem; }
+  .pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .pill.crud { background: var(--steel-wash); color: var(--steel); }
+  .pill.biz { background: var(--copper-wash); color: var(--copper-deep); }
+
+  /* glossary */
+  dl { margin: 6px 0; display: grid; gap: 0; }
+  dl > div { display: grid; grid-template-columns: 160px 1fr; gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  @media (max-width: 620px) { dl > div { grid-template-columns: 1fr; gap: 3px; } }
+  dt { font-family: var(--font-mono); font-size: .85rem; color: var(--copper-deep); font-weight: 600; }
+  dd { margin: 0; color: var(--ink-soft); font-size: .95rem; }
+
+  footer { border-top: 1px solid var(--line); padding: 24px 0 46px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; color: var(--ink-faint); }
+</style>
+
+<div class="topband">
+  <div class="wrap">
+    <div class="brand"><span class="mark">Mixer<b>Works</b></span><span class="sub">Engineering Notes</span></div>
+    <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">Theme</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Primer · How the backend works</div>
+    <h1>How MixerWorks uses Odoo</h1>
+    <p class="lede">A ground-up explanation for someone new to Odoo and to SaaS — built from the
+      actual calls in this codebase. By the end you'll know the one API we use, the exact models and
+      methods we touch, and why a single button click can ripple into a manufacturing order, a
+      sub-assembly, and a purchase order all at once.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="doc">
+    <nav class="toc" aria-label="Contents">
+      <ol>
+        <li><a href="#what">What Odoo actually is</a></li>
+        <li><a href="#two-ways">Two ways we talk to it</a></li>
+        <li><a href="#callkw">The one API call</a></li>
+        <li><a href="#models">The models we use</a></li>
+        <li><a href="#methods">CRUD vs business methods</a></li>
+        <li><a href="#trace">One click, traced end-to-end</a></li>
+        <li><a href="#features">The engine we lean on</a></li>
+        <li><a href="#gotchas">Newcomer gotchas</a></li>
+        <li><a href="#saas">Why this is a SaaS</a></li>
+        <li><a href="#glossary">Glossary</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <section id="what">
+        <p class="kicker">Start here</p>
+        <h2>What Odoo actually is</h2>
+        <p>Odoo is an <strong>open-source ERP</strong> — a big bundle of business software (Sales,
+          Purchase, Manufacturing, Inventory, Accounting…) that all shares one database. We run the
+          free <strong>Community</strong> edition in Docker, next to a PostgreSQL database.</p>
+        <p>Under all the apps, Odoo is really three things stacked up:</p>
+        <div class="two">
+          <div class="card"><h4>A data model</h4><p>Hundreds of predefined business tables — customers, products, orders, bills of material, stock moves. Odoo calls each one a <span class="ink">model</span> (e.g. <code>sale.order</code>).</p></div>
+          <div class="card"><h4>An ORM + business logic</h4><p>Every model is a Python class with methods. Some are plumbing (<code>create</code>, <code>write</code>); some are real operations (<code>action_confirm</code>) that run Odoo's engine.</p></div>
+          <div class="card"><h4>A web layer</h4><p>Odoo's own UI, plus an <span class="ink">External API</span> that exposes every model and method over HTTP. That API is our doorway.</p></div>
+          <div class="card"><h4>Postgres underneath</h4><p>All data lives in one PostgreSQL database. We almost never touch SQL directly — the ORM does it for us.</p></div>
+        </div>
+        <div class="note copper"><span class="tag">The big idea</span>
+          <p>We don't rebuild manufacturing software. Odoo already knows how a factory works. Our
+          frontend just <strong>drives Odoo from the outside</strong> over its API, and hides Odoo
+          completely behind a branded UI. The customer never knows Odoo is there.</p></div>
+      </section>
+
+      <section id="two-ways">
+        <p class="kicker">Orientation</p>
+        <h2>Two ways we talk to Odoo</h2>
+        <p>There are exactly two, and they're used at different times. Don't mix them up.</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Channel</th><th>When</th><th>How</th><th>Runs where</th></tr></thead>
+          <tbody>
+            <tr><td class="m">JSON-RPC<br>External API</td><td class="small">Every time a user clicks something in the live app</td><td class="small">Next.js server calls Odoo over HTTP as the <code>svc_portal</code> user</td><td class="small"><strong>Outside</strong> Odoo, across the network</td></tr>
+            <tr><td class="m">odoo shell</td><td class="small">One-time setup / data loading (our <code>scripts/*.py</code>)</td><td class="small">Python piped straight into the Odoo process; full ORM with an <code>env</code> handle</td><td class="small"><strong>Inside</strong> Odoo, no API</td></tr>
+          </tbody>
+        </table></div>
+        <p>This primer is about the first one — the <strong>runtime API</strong> — because that's how
+          the product actually works day to day. (The setup scripts just seed the database once; see
+          <code>docs/06-OPERATIONS.md</code>.)</p>
+        <div class="codecap">The whole runtime path, in one picture</div>
+<pre><span class="c">// Nothing in the browser ever touches Odoo. The boundary is the point.</span>
+Browser  ──►  Next.js server <span class="p">(</span>frontend/<span class="p">)</span>  ──►  Odoo 17  ──►  PostgreSQL
+              <span class="c">lib/odoo.js speaks JSON-RPC</span>       <span class="c">:8069</span>
+              <span class="c">as user "svc_portal"</span></pre>
+      </section>
+
+      <section id="callkw">
+        <p class="kicker">The core</p>
+        <h2>The one API call you need to understand</h2>
+        <p>Odoo's External API is almost comically simple: <strong>everything is one endpoint.</strong>
+          You POST JSON that says "on <em>this model</em>, run <em>this method</em>, with <em>these
+          arguments</em>." Odoo runs the Python method and returns the result. That endpoint is
+          <code>/web/dataset/call_kw</code>.</p>
+        <p>Before you can call it, you log in once to get a session cookie:</p>
+        <div class="codecap">lib/odoo.js — authenticate once, reuse the cookie</div>
+<pre><span class="k">POST</span> /web/session/authenticate
+<span class="p">{</span> <span class="s">"db"</span>: <span class="s">"erp"</span>, <span class="s">"login"</span>: <span class="s">"svc_portal"</span>, <span class="s">"password"</span>: <span class="s">"••••"</span> <span class="p">}</span>
+<span class="c">// → returns a session cookie we cache and attach to every later call</span></pre>
+        <p>After that, one function — <code>call_kw</code> — is 90% of the whole integration. Our
+          wrapper in <code>lib/odoo.js</code> looks like this:</p>
+        <div class="codecap">The shape of every single Odoo call we make</div>
+<pre><span class="k">callKw</span><span class="p">(</span><span class="n">model</span>, <span class="n">method</span>, <span class="n">args</span>, <span class="n">kwargs</span><span class="p">)</span>
+   <span class="c">//  model  = which Odoo table, e.g. "sale.order"</span>
+   <span class="c">//  method = which function, e.g. "action_confirm"</span>
+   <span class="c">//  args   = positional arguments (usually starts with record IDs)</span>
+   <span class="c">//  kwargs = named options, e.g. { limit: 8, order: "date_order desc" }</span></pre>
+        <p>The most common method is <code>search_read</code> — "find records matching a filter and give
+          me these fields." We wrap it as <code>searchRead(model, domain, fields, kwargs)</code>. A
+          <strong>domain</strong> is Odoo's filter language: a list of <code>[field, operator, value]</code>
+          conditions.</p>
+        <div class="codecap">A real read from the dashboard (app/page.js)</div>
+<pre><span class="k">searchRead</span><span class="p">(</span>
+  <span class="s">"mrp.production"</span>,                              <span class="c">// model: manufacturing orders</span>
+  <span class="p">[[</span><span class="s">"state"</span>, <span class="s">"not in"</span>, <span class="p">[</span><span class="s">"done"</span>, <span class="s">"cancel"</span><span class="p">]]]</span>,  <span class="c">// domain: still open</span>
+  <span class="p">[</span><span class="s">"name"</span>, <span class="s">"product_id"</span>, <span class="s">"product_qty"</span>, <span class="s">"state"</span><span class="p">]</span>, <span class="c">// fields we want back</span>
+  <span class="p">{</span> <span class="n">limit</span>: <span class="n">8</span> <span class="p">}</span>
+<span class="p">)</span></pre>
+        <div class="note"><span class="tag">Why it matters</span><p>Because every read and every action
+          is the same call, the entire backend integration lives in two small files: <code>lib/odoo.js</code>
+          (the transport) and <code>lib/actions.js</code> (the writes). That is the thin boundary that keeps
+          Odoo swappable later.</p></div>
+      </section>
+
+      <section id="models">
+        <p class="kicker">The vocabulary</p>
+        <h2>The Odoo models we actually use</h2>
+        <p>Out of Odoo's hundreds of models, MixerWorks touches just <strong>nine</strong> — plus one
+          we built ourselves. Learn these ten names and you understand the whole data side.</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Model</th><th>Plain English</th><th>Where it shows up</th></tr></thead>
+          <tbody>
+            <tr><td class="m">sale.order<br>sale.order.line</td><td class="small">A quotation / customer order and its line items</td><td class="small">Orders &amp; Quotes pages</td></tr>
+            <tr><td class="m">purchase.order</td><td class="small">An RFQ / purchase order to a vendor</td><td class="small">Purchasing page</td></tr>
+            <tr><td class="m">mrp.production</td><td class="small">A Manufacturing Order (a job on the floor) — "MO"</td><td class="small">Production page</td></tr>
+            <tr><td class="m">mrp.bom<br>mrp.bom.line</td><td class="small">A Bill of Materials — the recipe of parts for a product</td><td class="small">Cost Sheets page</td></tr>
+            <tr><td class="m">product.template<br>product.product</td><td class="small">A product. <em>template</em> = the catalogue item; <em>product</em> = the specific variant that stock is counted on</td><td class="small">Inventory, everywhere</td></tr>
+            <tr><td class="m">stock.move</td><td class="small">One inventory movement (a handoff or a receipt)</td><td class="small">Movements page</td></tr>
+            <tr><td class="m">stock.warehouse<br>.orderpoint</td><td class="small">A min/max reorder rule for a component</td><td class="small">Inventory health column</td></tr>
+            <tr><td class="m">res.partner</td><td class="small">Anyone you deal with — customers <em>and</em> vendors</td><td class="small">Order / vendor pickers</td></tr>
+            <tr><td class="m" style="color:var(--violet)">mfg.quality.check</td><td class="small"><strong>Our own model</strong> — a mandatory QA gate on an MO</td><td class="small">Quality Gates page</td></tr>
+          </tbody>
+        </table></div>
+        <p>The first nine come free with Odoo's Sales, Purchase, Manufacturing, and Inventory apps. The
+          last one is a small custom add-on (<code>addons/mfg_quality</code>) — proof that when Odoo
+          doesn't do something, we add a model of our own and it behaves exactly like a native one.</p>
+      </section>
+
+      <section id="methods">
+        <p class="kicker">The verbs</p>
+        <h2>Two kinds of methods: boring and powerful</h2>
+        <p>Every method we call falls into one of two buckets. The distinction is the single most
+          important idea in this whole document.</p>
+        <div class="two">
+          <div class="card"><span class="pill crud">Plumbing / CRUD</span><h4 style="margin-top:8px">Move data in and out</h4>
+            <p><code>create</code>, <code>read</code>, <code>write</code>, <code>search_read</code>. These
+            just store and fetch records. Nothing clever happens.</p></div>
+          <div class="card"><span class="pill biz">Business methods</span><h4 style="margin-top:8px">Run the factory</h4>
+            <p><code>action_confirm</code>, <code>button_mark_done</code>, <code>button_confirm</code>.
+            These trigger Odoo's <em>engine</em> — one call can create many records and enforce rules.</p></div>
+        </div>
+        <p>Here is the complete list of what MixerWorks actually calls, pulled straight from
+          <code>lib/actions.js</code>:</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Call</th><th>Kind</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="m">sale.order · create</td><td><span class="pill crud">crud</span></td><td class="small">Create a new quotation from the "New order" form</td></tr>
+            <tr><td class="m">sale.order · action_confirm</td><td><span class="pill biz">business</span></td><td class="small"><strong>The big one.</strong> Turns a quote into a confirmed order and kicks off production + purchasing (see next section)</td></tr>
+            <tr><td class="m">purchase.order · button_confirm</td><td><span class="pill biz">business</span></td><td class="small">Confirm an RFQ into a real purchase order to the vendor</td></tr>
+            <tr><td class="m">mrp.production · button_mark_done</td><td><span class="pill biz">business</span></td><td class="small">Close a manufacturing job — <em>but our QA gate can block it</em></td></tr>
+            <tr><td class="m">mrp.bom · write</td><td><span class="pill crud">crud</span></td><td class="small">Save edited rejection % / profit % on a cost sheet</td></tr>
+            <tr><td class="m">mrp.bom · action_cs_apply_price</td><td><span class="pill biz">business</span></td><td class="small">Our add-on's method — push the computed price onto the product</td></tr>
+            <tr><td class="m">mfg.quality.check · action_set_result</td><td><span class="pill biz">business</span></td><td class="small">Record a QA pass/fail; a fail re-opens the gate</td></tr>
+            <tr><td class="m">read · search_read</td><td><span class="pill crud">crud</span></td><td class="small">Every page's data fetch</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note copper"><span class="tag">Notice</span><p>Three of those business methods are
+          Odoo's own (<code>action_confirm</code>, <code>button_confirm</code>, <code>button_mark_done</code>)
+          and two are <strong>ours</strong>. To the API they're identical — our custom methods are called
+          exactly the same way as Odoo's built-ins. That's the power of building <em>on</em> Odoo rather
+          than beside it.</p></div>
+      </section>
+
+      <section id="trace">
+        <p class="kicker">The payoff</p>
+        <h2>One click, traced end-to-end</h2>
+        <p>This is where Odoo earns its keep. When a user creates and confirms an order for
+          <strong>10 × REMI STORM</strong>, our code makes just <em>two</em> API calls. Odoo does the
+          rest — automatically.</p>
+        <div class="codecap">lib/actions.js — this is the entire code</div>
+<pre><span class="c">// 1. create the quotation</span>
+<span class="k">const</span> soId = <span class="k">await</span> callKw(<span class="s">"sale.order"</span>, <span class="s">"create"</span>, <span class="p">[{</span>
+  partner_id: <span class="n">7</span>,
+  order_line: <span class="p">[[</span><span class="n">0</span>, <span class="n">0</span>, <span class="p">{</span> product_id: <span class="n">42</span>, product_uom_qty: <span class="n">10</span> <span class="p">}]]</span>,
+<span class="p">}]);</span>
+
+<span class="c">// 2. confirm it — and stand back</span>
+<span class="k">await</span> callKw(<span class="s">"sale.order"</span>, <span class="s">"action_confirm"</span>, <span class="p">[[</span>soId<span class="p">]]);</span></pre>
+        <p>That second line sets off a chain reaction inside Odoo, driven by the product's routes
+          (<span class="ink">Make-To-Order</span> + <span class="ink">Manufacture</span>/<span class="ink">Buy</span>):</p>
+        <div class="flow">
+          <div class="step"><div class="rail"><div class="dot">1</div><div class="line"></div></div>
+            <div class="body"><b>Sales order confirmed</b><div class="meta">sale.order → state: "sale"</div>
+            <p>The customer demand for 10 mixers is now real. Odoo asks: how do we fulfil it?</p></div></div>
+          <div class="step"><div class="rail"><div class="dot">2</div><div class="line"></div></div>
+            <div class="body"><b>Manufacturing Order created — 10 × REMI STORM</b><div class="meta">mrp.production (auto)</div>
+            <p>The mixer is "manufactured", so Odoo raises a factory job and reads its Bill of Materials to see what it needs.</p></div></div>
+          <div class="step"><div class="rail"><div class="dot violet">3</div><div class="line"></div></div>
+            <div class="body"><b>Sub-assembly MO created — the motors</b><div class="meta">mrp.production (nested)</div>
+            <p>The BOM says each mixer needs a Motor 35mm, which is <em>also</em> manufactured. So Odoo raises a second, nested job to build the motors first.</p></div></div>
+          <div class="step"><div class="rail"><div class="dot steel">4</div><div class="line"></div></div>
+            <div class="body"><b>Purchase order raised — ~33 component lines</b><div class="meta">purchase.order (auto, to the vendor)</div>
+            <p>Every part that's <em>bought</em>, not made, gets gathered into an RFQ to the supplier — at the prices from the vendor pricelist.</p></div></div>
+          <div class="step"><div class="rail"><div class="dot good">✓</div></div>
+            <div class="body"><b>Our pages read it all back</b><div class="meta">search_read on each model</div>
+            <p>The Orders page shows the linked jobs and POs; Production shows live material readiness; Inventory shows what's now short. No extra code — just reads.</p></div></div>
+        </div>
+        <div class="note"><span class="tag">The lesson</span><p>Building that cascade by hand — BOM
+          explosion, nested sub-assemblies, procurement, vendor pricing, stock reservation — would be
+          months of careful, bug-prone work. We got it from <em>one</em> <code>action_confirm</code> call.
+          <strong>That</strong> is why we chose Odoo.</p></div>
+      </section>
+
+      <section id="features">
+        <p class="kicker">Under the hood</p>
+        <h2>The Odoo features we lean on</h2>
+        <p>Beyond the API, these are the built-in capabilities doing the heavy lifting. We install four
+          Odoo apps and use them like a library.</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Odoo app / feature</th><th>What we get for free</th></tr></thead>
+          <tbody>
+            <tr><td class="m">Manufacturing (MRP)</td><td class="small">Bills of material, multi-level BOM explosion, manufacturing orders, work centers &amp; routing time</td></tr>
+            <tr><td class="m">Make-To-Order + Procurement</td><td class="small">The cascade above — demand automatically pulls production and purchasing into being</td></tr>
+            <tr><td class="m">Inventory (Stock)</td><td class="small">On-hand / reserved / incoming / forecast quantities (<code>qty_available</code>, <code>free_qty</code>, <code>virtual_available</code>), and live component-availability on each MO</td></tr>
+            <tr><td class="m">Reordering rules</td><td class="small">Min/max order points that flag or auto-replenish low components</td></tr>
+            <tr><td class="m">Sales &amp; Purchase</td><td class="small">Quotation → order flow, vendor pricelists, RFQ → PO confirmation</td></tr>
+            <tr><td class="m">The ORM framework</td><td class="small">Lets us add <code>mfg_quality</code> and <code>mfg_cost_sheet</code> as first-class models with their own fields, methods, and security</td></tr>
+          </tbody>
+        </table></div>
+        <p>We read Odoo's computed stock fields directly — for example the Production page pulls
+          <code>components_availability_state</code> to show a live green/amber/red "materials ready?"
+          badge. We didn't compute that; Odoo did.</p>
+      </section>
+
+      <section id="gotchas">
+        <p class="kicker">Things that surprise newcomers</p>
+        <h2>Three Odoo quirks worth knowing early</h2>
+
+        <h3>1 · The <code>[0, 0, {…}]</code> command syntax</h3>
+        <p>When you write a one-to-many field (like adding lines to an order), Odoo doesn't take a plain
+          list. It takes <em>command tuples</em>. <code>[0, 0, {values}]</code> means "create a new linked
+          record." That's why our order creation looks the way it does:</p>
+<pre>order_line: <span class="p">[[</span><span class="n">0</span>, <span class="n">0</span>, <span class="p">{</span> product_id: <span class="n">42</span>, product_uom_qty: <span class="n">10</span> <span class="p">}]]</span>
+<span class="c">//         └ 0 = "create"</span>
+<span class="c">// other commands you'll meet: [6,0,[ids]] = "replace all links with these"</span>
+<span class="c">//                             [4, id]     = "add this link"</span></pre>
+
+        <h3>2 · A link comes back as <code>[id, "name"]</code></h3>
+        <p>Read a Many2one field (like a partner) and Odoo returns a pair, not just an ID. That's why the
+          UI code reaches for the second element:</p>
+<pre><span class="c">// so.partner_id is  [7, "Sharma Distributors"]</span>
+so.partner_id?.<span class="p">[</span><span class="n">1</span><span class="p">]</span>   <span class="c">// → "Sharma Distributors" (the label to show)</span>
+so.partner_id?.<span class="p">[</span><span class="n">0</span><span class="p">]</span>   <span class="c">// → 7 (the ID to filter on)</span></pre>
+
+        <h3>3 · Template vs variant</h3>
+        <p>A <code>product.template</code> is the catalogue item ("REMI STORM"). A
+          <code>product.product</code> is the concrete sellable/stockable <em>variant</em> of it. Stock
+          quantities and BOM lines point at the <code>product.product</code>. It trips everyone up once;
+          then it never does again.</p>
+      </section>
+
+      <section id="saas">
+        <p class="kicker">The business shape</p>
+        <h2>Why this is a SaaS — not just an Odoo install</h2>
+        <p>SaaS — <strong>Software as a Service</strong> — means customers <em>rent</em> software that
+          runs on your servers and pay a subscription, instead of buying and installing it themselves.
+          Three things turn our Odoo setup into a SaaS product:</p>
+        <div class="flow" style="margin-top:4px">
+          <div class="step"><div class="rail"><div class="dot">A</div><div class="line"></div></div>
+            <div class="body"><b>White-label — Odoo is invisible</b>
+            <p>The customer only ever loads the branded Next.js app. Every Odoo call happens
+              <em>server-side</em> as <code>svc_portal</code>; no Odoo URL, cookie, or screen ever reaches
+              the browser. To the customer it's bespoke software called MixerWorks.</p></div></div>
+          <div class="step"><div class="rail"><div class="dot steel">B</div><div class="line"></div></div>
+            <div class="body"><b>You host and operate it</b>
+            <p>Odoo, Postgres, and the frontend run on your infrastructure. Customers need nothing but a
+              browser. You handle updates, backups, and uptime — that's the "service" part.</p></div></div>
+          <div class="step"><div class="rail"><div class="dot violet">C</div></div>
+            <div class="body"><b>One product, many customers</b>
+            <p>The same codebase serves every manufacturer you sign. The open question — Odoo's natural
+              model is <em>one database per customer</em> — is the main thing to design before customer #2.
+              See <code>docs/07-ROADMAP.md</code>.</p></div></div>
+        </div>
+        <div class="note copper"><span class="tag">The mental model</span><p>Think of Odoo as a powerful
+          <strong>engine you bought</strong>, and MixerWorks as the <strong>car you built around it</strong>.
+          Customers drive the car. They never open the hood — and if you ever swap the engine, they won't
+          notice, as long as the dashboard keeps working.</p></div>
+      </section>
+
+      <section id="glossary">
+        <p class="kicker">Reference</p>
+        <h2>Glossary</h2>
+        <dl>
+          <div><dt>ERP</dt><dd>Enterprise Resource Planning — one system running sales, purchasing, manufacturing, and stock together. Odoo is one.</dd></div>
+          <div><dt>SaaS</dt><dd>Software as a Service — customers rent hosted software on subscription instead of installing it.</dd></div>
+          <div><dt>ORM</dt><dd>Object-Relational Mapping — the layer that lets you work with database rows as objects/methods instead of writing SQL.</dd></div>
+          <div><dt>Model</dt><dd>Odoo's word for a business table+class, e.g. <code>sale.order</code>.</dd></div>
+          <div><dt>JSON-RPC</dt><dd>A simple "call a remote function over HTTP with JSON" protocol. Odoo's External API speaks it.</dd></div>
+          <div><dt>call_kw</dt><dd>The single endpoint that runs any model method remotely. Our whole integration rides on it.</dd></div>
+          <div><dt>Domain</dt><dd>Odoo's filter format: a list of <code>[field, operator, value]</code> conditions.</dd></div>
+          <div><dt>BOM</dt><dd>Bill of Materials — the recipe of components (and quantities) for a product.</dd></div>
+          <div><dt>MO</dt><dd>Manufacturing Order — one production job (<code>mrp.production</code>).</dd></div>
+          <div><dt>MTO</dt><dd>Make-To-Order — a route where confirming a sale automatically triggers production/purchase.</dd></div>
+          <div><dt>white-label</dt><dd>Selling someone else's engine under your own brand. Community's LGPL licence permits it.</dd></div>
+          <div><dt>svc_portal</dt><dd>The single Odoo service account the frontend logs in as to make every API call.</dd></div>
+        </dl>
+      </section>
+    </article>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>MixerWorks Manufacturing Cloud — Engineering Notes</span>
+    <span>Built from the live codebase · pairs with docs/01–07</span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var btn = document.getElementById("themebtn");
+    btn.addEventListener("click", function () {
+      var root = document.documentElement, cur = root.getAttribute("data-theme");
+      if (!cur) cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+    });
+    document.querySelectorAll('.toc a').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var el = document.querySelector(a.getAttribute('href'));
+        if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      });
+    });
+  })();
+</script>
