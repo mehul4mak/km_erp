@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mfg_quality_check_user,mfg.quality.check user,model_mfg_quality_check,mrp.group_mrp_user,1,1,1,0
+access_mfg_quality_check_manager,mfg.quality.check manager,model_mfg_quality_check,mrp.group_mrp_manager,1,1,1,1

@@ -1,0 +1,461 @@
+<title>MixerWorks — Phase 1: Your Products, Digitized</title>
+<style>
+  :root {
+    --paper: #f4f0e8;
+    --surface: #fffdf8;
+    --surface-2: #f9f5ec;
+    --ink: #201c15;
+    --ink-soft: #5b5347;
+    --ink-faint: #8a8072;
+    --line: #e2dac9;
+    --line-strong: #cdc2ad;
+    --copper: #b0642c;
+    --copper-deep: #8f4e1c;
+    --copper-wash: #f3e6d6;
+    --steel: #48606c;
+    --verified: #2e7a50;
+    --verified-wash: #e4efe6;
+    --shadow: 0 1px 2px rgba(32,28,21,.05), 0 12px 32px -18px rgba(32,28,21,.28);
+    --font-display: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #16130e;
+      --surface: #1e1a13;
+      --surface-2: #221d15;
+      --ink: #efe9dc;
+      --ink-soft: #b0a795;
+      --ink-faint: #7d7566;
+      --line: #322b20;
+      --line-strong: #453c2d;
+      --copper: #d38a4f;
+      --copper-deep: #b86e33;
+      --copper-wash: #2b2013;
+      --steel: #86a2ae;
+      --verified: #58ac7c;
+      --verified-wash: #17251b;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 34px -18px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f4f0e8; --surface: #fffdf8; --surface-2: #f9f5ec; --ink: #201c15;
+    --ink-soft: #5b5347; --ink-faint: #8a8072; --line: #e2dac9; --line-strong: #cdc2ad;
+    --copper: #b0642c; --copper-deep: #8f4e1c; --copper-wash: #f3e6d6; --steel: #48606c;
+    --verified: #2e7a50; --verified-wash: #e4efe6;
+    --shadow: 0 1px 2px rgba(32,28,21,.05), 0 12px 32px -18px rgba(32,28,21,.28);
+  }
+  :root[data-theme="dark"] {
+    --paper: #16130e; --surface: #1e1a13; --surface-2: #221d15; --ink: #efe9dc;
+    --ink-soft: #b0a795; --ink-faint: #7d7566; --line: #322b20; --line-strong: #453c2d;
+    --copper: #d38a4f; --copper-deep: #b86e33; --copper-wash: #2b2013; --steel: #86a2ae;
+    --verified: #58ac7c; --verified-wash: #17251b;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 34px -18px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- Spec-sheet top band ---- */
+  .topband {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .topband .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding-top: 14px; padding-bottom: 14px;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand .mark {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em;
+    font-size: 17px;
+  }
+  .brand .mark b { color: var(--copper); }
+  .brand .sub {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .themebtn {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-soft);
+    background: transparent; border: 1px solid var(--line-strong); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .themebtn:hover { border-color: var(--copper); color: var(--copper); }
+  .themebtn:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+
+  /* ---- Hero ---- */
+  .hero { padding: 64px 0 40px; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--copper); font-weight: 600;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--line-strong); max-width: 120px; }
+  h1 {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -.03em;
+    font-size: clamp(2.1rem, 5.4vw, 3.4rem); line-height: 1.04;
+    margin: 18px 0 0; text-wrap: balance; max-width: 18ch;
+  }
+  .lede {
+    font-size: 1.18rem; color: var(--ink-soft); margin: 20px 0 0; max-width: 60ch;
+  }
+
+  /* ---- Section scaffolding ---- */
+  section { padding: 40px 0; border-top: 1px solid var(--line); }
+  .sectlabel {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0 0 6px;
+  }
+  h2 {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em;
+    font-size: clamp(1.5rem, 3.4vw, 2rem); margin: 0 0 18px; text-wrap: balance;
+  }
+  p.body { color: var(--ink-soft); max-width: 62ch; margin: 0 0 14px; }
+  .accent { color: var(--copper); font-weight: 600; }
+
+  /* ---- Problem / before panel ---- */
+  .problem {
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-left: 3px solid var(--copper); border-radius: 4px;
+    padding: 24px 26px; margin-top: 6px;
+  }
+  .problem h3 {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--copper-deep); margin: 0 0 14px; font-weight: 700;
+  }
+  .problem ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+  .problem li { display: flex; gap: 12px; align-items: flex-start; color: var(--ink-soft); }
+  .problem li b { color: var(--ink); font-weight: 600; }
+  .problem li .x {
+    flex: none; margin-top: 2px; width: 18px; height: 18px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--copper-wash); color: var(--copper-deep);
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  }
+
+  /* ---- Stat row ---- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line);
+    border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .stat { background: var(--surface); padding: 22px 20px; }
+  .stat .n {
+    font-family: var(--font-mono); font-weight: 700; font-size: clamp(1.6rem, 4vw, 2.2rem);
+    letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .stat .n small { font-size: .5em; color: var(--copper); font-weight: 600; }
+  .stat .k { font-size: .8rem; color: var(--ink-faint); margin-top: 4px; line-height: 1.35; }
+  @media (max-width: 620px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---- BOM tree ---- */
+  .exhibit {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: var(--shadow); overflow: hidden; margin-top: 8px;
+  }
+  .exhibit-head {
+    padding: 18px 22px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    background: var(--surface-2);
+  }
+  .exhibit-head .title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .exhibit-head .title b { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: -.01em; }
+  .chip {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px; font-weight: 600;
+  }
+  .chip.finished { background: var(--steel); color: #fff; }
+  .chip.sub { background: var(--copper); color: #fff; }
+  .exhibit-body { padding: 8px 0 6px; }
+
+  .node { padding: 4px 22px; }
+  .node-row {
+    display: flex; align-items: center; gap: 12px; padding: 9px 0;
+  }
+  .node-row .lbl { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .node-row .name { font-weight: 600; }
+  .node-row .meta { font-family: var(--font-mono); font-size: .78rem; color: var(--ink-faint); }
+  .node-row .amt {
+    margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; white-space: nowrap;
+  }
+  .children { margin-left: 14px; border-left: 2px solid var(--line-strong); padding-left: 4px; }
+  .children.copper { border-color: var(--copper); }
+
+  /* motor ledger */
+  .ledger { margin: 2px 22px 6px; border-top: 1px dashed var(--line-strong); }
+  .ledger table { width: 100%; border-collapse: collapse; font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums; font-size: .82rem; }
+  .ledger td { padding: 6px 4px; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+  .ledger td.part { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .ledger td.q, .ledger td.rate, .ledger td.ext { text-align: right; white-space: nowrap; }
+  .ledger td.ext { color: var(--ink); }
+  .ledger tr:last-child td { border-bottom: none; }
+  .ledger tfoot td { border-top: 2px solid var(--line-strong); border-bottom: none;
+    padding-top: 9px; font-weight: 700; color: var(--ink); }
+  .ledgerwrap { overflow-x: auto; }
+
+  .rollup {
+    margin: 4px 22px 18px; padding: 16px 18px; border-radius: 6px;
+    background: var(--verified-wash); border: 1px solid color-mix(in srgb, var(--verified) 26%, transparent);
+  }
+  .rollup .line { display: flex; justify-content: space-between; gap: 12px;
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: .86rem;
+    color: var(--ink-soft); padding: 3px 0; }
+  .rollup .line.total { border-top: 1px solid color-mix(in srgb, var(--verified) 40%, transparent);
+    margin-top: 6px; padding-top: 9px; font-weight: 700; color: var(--ink); font-size: 1rem; }
+  .rollup .verimark { color: var(--verified); font-weight: 700; }
+  .rollup .cap { font-family: var(--font-sans); font-size: .82rem; color: var(--verified);
+    display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .rollup .cap::before { content: "✓"; display: grid; place-items: center; flex: none;
+    width: 18px; height: 18px; border-radius: 50%; background: var(--verified); color: #fff;
+    font-size: 11px; font-weight: 700; }
+
+  /* ---- models table ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table.models { width: 100%; border-collapse: collapse; min-width: 520px; }
+  table.models th, table.models td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  table.models thead th {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; background: var(--surface-2);
+  }
+  table.models tbody tr:last-child td { border-bottom: none; }
+  table.models td.model { font-weight: 600; }
+  table.models td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+  table.models td.motor { font-family: var(--font-mono); font-size: .82rem; color: var(--steel); }
+
+  /* ---- payoff ---- */
+  .payoff { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
+  @media (max-width: 620px) { .payoff { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 22px; }
+  .card h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: 1.05rem; letter-spacing: -.01em; }
+  .card p { margin: 0; color: var(--ink-soft); font-size: .95rem; }
+  .card .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--copper); font-weight: 600; display: block; margin-bottom: 10px; }
+
+  .next {
+    margin-top: 24px; padding: 20px 22px; border-radius: 8px;
+    background: var(--surface-2); border: 1px dashed var(--line-strong);
+    display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap;
+  }
+  .next .step { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--copper); font-weight: 700; }
+  .next p { margin: 0; color: var(--ink-soft); flex: 1; min-width: 260px; }
+  .next b { color: var(--ink); }
+
+  footer { border-top: 1px solid var(--line); padding: 26px 0 48px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; color: var(--ink-faint); }
+
+  .fade { opacity: 0; transform: translateY(10px); animation: rise .6s ease forwards; }
+  .fade:nth-child(2) { animation-delay: .05s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .fade { animation: none; opacity: 1; transform: none; } }
+</style>
+
+<div class="topband">
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark">Mixer<b>Works</b></span>
+      <span class="sub">Manufacturing Cloud</span>
+    </div>
+    <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">Theme</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap fade">
+    <div class="eyebrow">Phase 1 · Product Foundation</div>
+    <h1>Your products, now living data — not a spreadsheet.</h1>
+    <p class="lede">We've loaded your real catalogue into the system: three mixer-grinder models,
+      your in-house motors built as their own assemblies, and every purchased part — with costs that
+      roll up automatically and land on the same numbers as your cost sheet.</p>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="wrap">
+      <p class="sectlabel">Where you are today</p>
+      <h2>The problem we set out to fix</h2>
+      <p class="body">From our discovery session, the way product costs live in the business today:</p>
+      <div class="problem">
+        <h3>What we heard</h3>
+        <ul>
+          <li><span class="x">1</span><span><b>Cost sheets live in Excel and go stale.</b> A component rate changes at the vendor, but the sheet keeps quoting the old number until someone remembers to edit it.</span></li>
+          <li><span class="x">2</span><span><b>The motor is costed by hand.</b> You build the motor in-house from a dozen parts, so its cost has to be worked out separately and typed back into every mixer's sheet.</span></li>
+          <li><span class="x">3</span><span><b>No single source of truth.</b> The real structure — which parts, how many, at what rate — sits across files and in people's heads, so two sheets rarely agree.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sectlabel">What Phase 1 delivered</p>
+      <h2>Every product, captured once — correctly</h2>
+      <div class="stats">
+        <div class="stat"><div class="n">3</div><div class="k">Finished mixer models on record</div></div>
+        <div class="stat"><div class="n">2</div><div class="k">In-house motor assemblies, built from their own parts</div></div>
+        <div class="stat"><div class="n">37</div><div class="k">Purchased components with real cost-sheet rates</div></div>
+        <div class="stat"><div class="n">2<small>-level</small></div><div class="k">Bills of material — motor nested inside the mixer</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sectlabel">The proof · REMI STORM 800W</p>
+      <h2>Watch the cost build itself, bottom-up</h2>
+      <p class="body">This is the whole point. The motor is its own assembly: its ten parts add up to a
+        motor cost, and that cost drops straight into the mixer above it. Change one wire rate and every
+        number above updates on its own.</p>
+
+      <div class="exhibit">
+        <div class="exhibit-head">
+          <div class="title"><b>REMI STORM 800W Mixer Grinder</b><span class="chip finished">Finished good</span></div>
+          <div style="font-family:var(--font-mono);font-size:.8rem;color:var(--ink-faint)">24 BOM lines</div>
+        </div>
+        <div class="exhibit-body">
+          <div class="node">
+            <div class="children copper">
+
+              <div class="node">
+                <div class="node-row">
+                  <span class="lbl"><span class="name">Motor 35mm Hybrid</span><span class="chip sub">Sub-assembly · built in-house</span></span>
+                  <span class="amt" style="color:var(--copper)">₹561.00</span>
+                </div>
+                <div class="ledger">
+                  <div class="ledgerwrap">
+                  <table>
+                    <tbody>
+                      <tr><td class="part">Stamping Set 35mm</td><td class="q">×1</td><td class="rate">₹180.00</td><td class="ext">180.00</td></tr>
+                      <tr><td class="part">Copper Wire (enamel)</td><td class="q">×0.18 kg</td><td class="rate">₹850.00/kg</td><td class="ext">153.00</td></tr>
+                      <tr><td class="part">Aluminium Wire (enamel)</td><td class="q">×0.10 kg</td><td class="rate">₹280.00/kg</td><td class="ext">28.00</td></tr>
+                      <tr><td class="part">Bracket Kenstar 180gm</td><td class="q">×1</td><td class="rate">₹45.00</td><td class="ext">45.00</td></tr>
+                      <tr><td class="part">Commutator 750W</td><td class="q">×1</td><td class="rate">₹38.00</td><td class="ext">38.00</td></tr>
+                      <tr><td class="part">Carbon Brush</td><td class="q">×2</td><td class="rate">₹4.00</td><td class="ext">8.00</td></tr>
+                      <tr><td class="part">Fan Kenstar</td><td class="q">×1</td><td class="rate">₹12.00</td><td class="ext">12.00</td></tr>
+                      <tr><td class="part">Motor Shaft 165mm</td><td class="q">×1</td><td class="rate">₹35.00</td><td class="ext">35.00</td></tr>
+                      <tr><td class="part">Bush 003 MS</td><td class="q">×2</td><td class="rate">₹6.00</td><td class="ext">12.00</td></tr>
+                      <tr><td class="part">Motor Misc (varnish / screws / washers)</td><td class="q">×1</td><td class="rate">₹50.00</td><td class="ext">50.00</td></tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td class="part">Motor 35mm — rolled-up cost</td><td class="q"></td><td class="rate"></td><td class="ext">₹561.00</td></tr>
+                    </tfoot>
+                  </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="node">
+                <div class="node-row">
+                  <span class="lbl"><span class="name">23 purchased components</span><span class="meta">Body Set · Jar Set · Blade Set J4 · Cord · Switch · Dome · Packaging …</span></span>
+                  <span class="amt">₹959.75</span>
+                </div>
+              </div>
+
+              <div class="node">
+                <div class="node-row">
+                  <span class="lbl"><span class="name">Assembly &amp; Testing</span><span class="meta">20 min · Assembly Line @ ₹200/hr</span></span>
+                  <span class="amt" style="color:var(--ink-faint)">labour → Phase 3</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="rollup">
+            <div class="line"><span>Motor 35mm Hybrid (sub-assembly)</span><span>₹561.00</span></div>
+            <div class="line"><span>Purchased components (23)</span><span>₹959.75</span></div>
+            <div class="line total"><span>Material cost, rolled up automatically</span><span class="verimark">₹1,520.75</span></div>
+            <div class="cap">Matches the material subtotal on your REMI STORM cost sheet — to the rupee.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sectlabel">On record now</p>
+      <h2>All three models, same structure</h2>
+      <div class="tablewrap">
+        <table class="models">
+          <thead>
+            <tr><th>Model</th><th>In-house motor</th><th style="text-align:right">BOM lines</th><th style="text-align:right">Material (auto)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="model">REMI STORM 800W</td><td class="motor">Motor 35mm Hybrid</td><td class="num">24</td><td class="num">₹1,520.75</td></tr>
+            <tr><td class="model">PRIDE BREEZA 850W</td><td class="motor">Motor 35mm Hybrid</td><td class="num">24</td><td class="num">₹1,520.75</td></tr>
+            <tr><td class="model">SOWBAGHYA VEEHA 500W</td><td class="motor">Motor 27mm Hybrid</td><td class="num">24</td><td class="num">₹1,368.55</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sectlabel">Why it matters</p>
+      <h2>What this unlocks</h2>
+      <div class="payoff">
+        <div class="card">
+          <span class="tag">No more stale sheets</span>
+          <h4>One rate change, everywhere</h4>
+          <p>Update a vendor's price once and every product that uses that part re-costs itself instantly — no hunting through spreadsheets.</p>
+        </div>
+        <div class="card">
+          <span class="tag">The motor, solved</span>
+          <h4>In-house builds cost themselves</h4>
+          <p>Because the motor is modelled as its own assembly, its cost is always current and flows into every mixer that uses it — automatically.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Single source of truth</span>
+          <h4>One structure the whole floor trusts</h4>
+          <p>Parts, quantities and rates live in one place. Sales, purchase and production all read the same numbers.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Foundation for everything</span>
+          <h4>The base the rest is built on</h4>
+          <p>Live costing, quotations, purchase planning and stock reorder all stand on this data. Get it right once, benefit everywhere.</p>
+        </div>
+      </div>
+
+      <div class="next">
+        <span class="step">Next → Phase 3</span>
+        <p>Add your <b>2% rejection</b> and <b>7% profit</b> on top of this material cost and REMI STORM
+          becomes a live quotation price of <b>₹1,732.51</b> — versus your sheet's ₹1,722. The foundation
+          you're looking at is what makes that number trustworthy.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>MixerWorks Manufacturing Cloud — Phase 1 Review</span>
+    <span>Figures sourced from your BOM &amp; cost-sheet files</span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var btn = document.getElementById("themebtn");
+    btn.addEventListener("click", function () {
+      var root = document.documentElement;
+      var cur = root.getAttribute("data-theme");
+      if (!cur) {
+        cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+    });
+  })();
+</script>

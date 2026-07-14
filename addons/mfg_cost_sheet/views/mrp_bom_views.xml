@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_bom_form_cost_sheet" model="ir.ui.view">
+        <field name="name">mrp.bom.form.cost.sheet</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Cost Sheet" name="cost_sheet">
+                    <div class="oe_button_box">
+                        <button name="action_cs_apply_price" type="object"
+                                string="Apply Suggested Price to Product"
+                                class="btn-primary" icon="fa-arrow-circle-right"/>
+                    </div>
+                    <group>
+                        <group string="Markup (from cost sheet)">
+                            <field name="rejection_pct"/>
+                            <field name="profit_pct"/>
+                        </group>
+                        <group string="Computed cost (per unit, multi-level)">
+                            <field name="cs_material_cost"/>
+                            <field name="cs_operation_cost"/>
+                            <field name="cs_subtotal"/>
+                            <field name="cs_rejection_amt"/>
+                            <field name="cs_profit_amt"/>
+                            <field name="cs_suggested_price" class="oe_inline"
+                                   style="font-weight:bold;font-size:1.2em;"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
