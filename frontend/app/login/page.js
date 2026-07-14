@@ -20,9 +20,9 @@ export default function LoginPage({ searchParams }) {
     <div className="login-wrap">
       <div className="login-card">
         <div className="brand">
-          <div className="brand-mark">M</div>
+          <div className="brand-mark">KM</div>
           <div>
-            <div className="brand-name">MixerWorks</div>
+            <div className="brand-name">KMForge</div>
             <div className="brand-sub">Manufacturing Cloud</div>
           </div>
         </div>
@@ -35,7 +35,7 @@ export default function LoginPage({ searchParams }) {
         <form action={login}>
           <div className="field">
             <label>Email</label>
-            <input name="email" type="email" defaultValue="owner@mixerworks.in" required />
+            <input name="email" type="email" defaultValue="owner@kmforge.cloud" required />
           </div>
           <div className="field">
             <label>Password</label>

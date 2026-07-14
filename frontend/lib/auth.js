@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 // Lightweight demo auth for the POC: one factory login, session held in a cookie.
 // Swap for a real identity provider before production.
 const DEMO_USERS = {
-  "owner@mixerworks.in": { password: "demo1234", name: "Rajesh Gupta", role: "Owner" },
+  "owner@kmforge.cloud": { password: "demo1234", name: "Rajesh Gupta", role: "Owner" },
 };
 
 const COOKIE = "mw_session";

@@ -10,15 +10,15 @@ export default function Shell({ title, crumb, children }) {
     <div className="shell">
       <aside className="sidebar">
         <Link href="/" className="brand">
-          <div className="brand-mark">M</div>
+          <div className="brand-mark">KM</div>
           <div>
-            <div className="brand-name">MixerWorks</div>
+            <div className="brand-name">KMForge</div>
             <div className="brand-sub">Manufacturing Cloud</div>
           </div>
         </Link>
         <NavLinks />
         <div className="sidebar-foot">
-          Plant: Delhi NCR Unit 1<br />v1.0 · MixerWorks ERP
+          Plant: Delhi NCR Unit 1<br />v1.0 · KMForge · by KMatrix AI
         </div>
       </aside>
       <div className="main">
