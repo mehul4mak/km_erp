@@ -1,0 +1,249 @@
+<title>KMForge vs Premium ERP — an honest scorecard</title>
+<style>
+  :root{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--amber-wash:#f6ead3;--red:#b0402c;--red-wash:#f4e2dd;
+    --shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);
+    --font-display:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;--font-sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--amber-wash:#2a2012;--red:#d3775f;--red-wash:#2c1813;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}}
+  :root[data-theme="light"]{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--amber-wash:#f6ead3;--red:#b0402c;--red-wash:#f4e2dd;--shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);}
+  :root[data-theme="dark"]{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--amber-wash:#2a2012;--red:#d3775f;--red-wash:#2c1813;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px;}
+  .topband{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20;}
+  .topband .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 24px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:16px;}
+  .brand .mark b{color:var(--copper);}
+  .brand .sub{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .themebtn{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:6px 12px;cursor:pointer;}
+  .themebtn:hover{border-color:var(--copper);color:var(--copper);}
+  .themebtn:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
+
+  .hero{padding:56px 0 24px;}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--copper);font-weight:600;display:flex;align-items:center;gap:12px;}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line-strong);max-width:130px;}
+  h1{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:16px 0 0;text-wrap:balance;max-width:20ch;}
+  .lede{font-size:1.15rem;color:var(--ink-soft);margin:18px 0 0;max-width:66ch;}
+  .who{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);margin-top:14px;}
+
+  section{padding:34px 0;border-top:1px solid var(--line);}
+  .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper);font-weight:600;margin:0 0 6px;}
+  h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:clamp(1.4rem,3.2vw,1.9rem);margin:0 0 14px;text-wrap:balance;}
+  p{color:var(--ink-soft);max-width:68ch;margin:0 0 14px;}
+  .ink{color:var(--ink);font-weight:600;}
+
+  /* verdict columns */
+  .verdict{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:6px 0 0;}
+  @media(max-width:760px){.verdict{grid-template-columns:1fr;}}
+  .vcol{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:18px 18px 20px;border-top:3px solid var(--line-strong);}
+  .vcol.good{border-top-color:var(--verified);}
+  .vcol.par{border-top-color:var(--steel);}
+  .vcol.prem{border-top-color:var(--red);}
+  .vcol h3{font-family:var(--font-display);font-size:1.05rem;margin:0 0 3px;}
+  .vcol .sub{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;}
+  .vcol.good .sub{color:var(--verified);}.vcol.par .sub{color:var(--steel);}.vcol.prem .sub{color:var(--red);}
+  .vcol ul{margin:0;padding:0;list-style:none;display:grid;gap:9px;}
+  .vcol li{font-size:.9rem;color:var(--ink-soft);display:flex;gap:8px;}
+  .vcol li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;margin-top:7px;background:var(--line-strong);}
+  .vcol.good li::before{background:var(--verified);}.vcol.par li::before{background:var(--steel);}.vcol.prem li::before{background:var(--red);}
+
+  /* scorecard */
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 14px;}
+  .pill{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.03em;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;}
+  .pill.good{background:var(--verified-wash);color:var(--verified);}
+  .pill.par{background:var(--steel-wash);color:var(--steel);}
+  .pill.next{background:var(--amber-wash);color:var(--amber);}
+  .pill.prem{background:var(--red-wash);color:var(--red);}
+
+  .grp{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper-deep);font-weight:700;margin:22px 0 8px;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;min-width:640px;background:var(--surface);}
+  th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);vertical-align:top;}
+  thead th{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;background:var(--surface-2);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.cap{font-weight:600;white-space:nowrap;}
+  td.note{font-size:.9rem;color:var(--ink-soft);}
+  td.v{white-space:nowrap;}
+
+  .note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--copper);border-radius:5px;padding:16px 18px;margin:16px 0;}
+  .note .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--copper-deep);font-weight:700;display:block;margin-bottom:5px;}
+  .note p{margin:0 0 8px;}.note p:last-child{margin:0;}
+  .note.green{border-left-color:var(--verified);}
+  .note.green .tag{color:var(--verified);}
+
+  .arch{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+  @media(max-width:640px){.arch{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:16px 18px;}
+  .card h4{margin:0 0 6px;font-family:var(--font-display);font-size:1rem;}
+  .card p{margin:0;font-size:.92rem;}
+  .card .t{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;margin-bottom:8px;}
+  .card.good .t{color:var(--verified);}.card.gap .t{color:var(--red);}
+
+  footer{border-top:1px solid var(--line);padding:24px 0 46px;}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+</style>
+
+<div class="topband"><div class="wrap">
+  <div class="brand"><span class="mark">KM<b>Forge</b></span><span class="sub">Honest Scorecard</span></div>
+  <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">Theme</button>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">A straight assessment</div>
+  <h1>KMForge vs premium ERP — where we're right, and where we're not.</h1>
+  <p class="lede">An honest read of what we've built against the enterprise class — SAP, Oracle
+    NetSuite, Microsoft Dynamics, Odoo Enterprise, Infor. No spin: some things we do the way they
+    <em>should</em> be done, some are genuinely on par, and some are real gaps where premium wins.</p>
+  <div class="who">"Premium ERP" below = that enterprise class as a group · KMForge is an early product on a proven engine.</div>
+</div></header>
+
+<main>
+  <section><div class="wrap">
+    <p class="kicker">The short version</p>
+    <h2>Verdict at a glance</h2>
+    <div class="verdict">
+      <div class="vcol good">
+        <h3>Done the right way</h3>
+        <div class="sub">✓ we're strong here</div>
+        <ul>
+          <li>Controls are <b>enforced</b>, not optional (QA gate, inward QC)</li>
+          <li>One connected data spine — order → make → buy → ship</li>
+          <li>Live BOM costing + FIFO, correct to the rupee</li>
+          <li>Tailored, white-label UX — <b>your</b> software, not "SAP screens"</li>
+          <li>Days-to-value and a fraction of the cost</li>
+        </ul>
+      </div>
+      <div class="vcol par">
+        <h3>Genuinely on par</h3>
+        <div class="sub">● same engine underneath</div>
+        <ul>
+          <li>Multi-level BOMs & manufacturing orders</li>
+          <li>Procurement cascade (order pulls make + buy)</li>
+          <li>Stock reservations & FIFO valuation</li>
+          <li>Min/max reorder rules</li>
+          <li>Auto-numbered, linked documents</li>
+        </ul>
+      </div>
+      <div class="vcol prem">
+        <h3>Where premium leads</h3>
+        <div class="sub">▲ real gaps, stated plainly</div>
+        <ul>
+          <li>Integrated finance (GL, AP/AR, tax, costing postings)</li>
+          <li>Lot/serial traceability & batch genealogy</li>
+          <li>Capacity scheduling / MES / demand planning</li>
+          <li>Approvals, audit trail, role security, SSO</li>
+          <li>Multi-site / company / currency & scale</li>
+        </ul>
+      </div>
+    </div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">The detail</p>
+    <h2>Capability-by-capability</h2>
+    <div class="legend">
+      <span class="pill good">✓ done right</span>
+      <span class="pill par">● on par</span>
+      <span class="pill next">○ designed — next</span>
+      <span class="pill prem">▲ premium leads</span>
+    </div>
+
+    <div class="grp">Foundation — the manufacturing core</div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Capability</th><th>How KMForge does it</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="cap">Multi-level BOMs</td><td class="note">Mixer → motor sub-assembly → parts, fully nested — the same engine premium mid-market runs.</td><td class="v"><span class="pill par">● on par</span></td></tr>
+        <tr><td class="cap">Manufacturing orders & cascade</td><td class="note">One confirmed order auto-raises the mixer job, the nested motor job and the component PO.</td><td class="v"><span class="pill par">● on par</span></td></tr>
+        <tr><td class="cap">Live cost sheet</td><td class="note">BOM rolls up material + labour + rejection% + profit% to a price — matches the client sheet to the rupee.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+        <tr><td class="cap">FIFO valuation</td><td class="note">Material cost is first-in-first-out across the store.</td><td class="v"><span class="pill par">● on par</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grp">Controls — where "enforced" matters</div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Capability</th><th>How KMForge does it</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="cap">Mandatory QA gates</td><td class="note">A job cannot close until in-process + finished-goods checks pass — enforced server-side, unskippable from any screen.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+        <tr><td class="cap">Inward quality (GRN)</td><td class="note">A vendor lot cannot enter the store until inspected & accepted. Rejected stock is held.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+        <tr><td class="cap">Material requisition / reservation</td><td class="note">Store reserves & earmarks components per job (FIFO) before production consumes them.</td><td class="v"><span class="pill par">● on par</span></td></tr>
+        <tr><td class="cap">Product tiering</td><td class="note">Finished / semi-finished / raw split cleanly; sub-assemblies can't be sold by mistake.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grp">Breadth — where premium is more complete</div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Capability</th><th>How KMForge does it</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="cap">Integrated finance</td><td class="note">No GL / AP / AR / tax postings yet — costing doesn't hit the books. Premium is fully integrated.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+        <tr><td class="cap">Vendor bill & 3-way match</td><td class="note">PO ↔ GRN ↔ Bill matching is designed, not built.</td><td class="v"><span class="pill next">○ next</span></td></tr>
+        <tr><td class="cap">Lot / serial traceability</td><td class="note">No batch genealogy yet (which receipt went into which job). Premium tracks end-to-end.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+        <tr><td class="cap">Capacity scheduling / MES</td><td class="note">No finite-capacity planning or shop-floor terminal. Premium has APS/MES.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+        <tr><td class="cap">Demand planning / MRP run</td><td class="note">Uses make-to-order + reorder points, not a full netting MRP run / forecasting.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+        <tr><td class="cap">Reporting / BI</td><td class="note">Focused dashboard only; no ad-hoc analytics or drill-down BI.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+        <tr><td class="cap">Multi-warehouse / company / currency</td><td class="note">Single plant, single currency today.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grp">Governance & platform</div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Capability</th><th>How KMForge does it</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="cap">Approvals & audit trail</td><td class="note">Minimal today; premium has workflow approvals & segregation of duties.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+        <tr><td class="cap">Auth / roles / SSO</td><td class="note">Demo login only right now; real identity + RBAC is Phase-5 work.</td><td class="v"><span class="pill next">○ next</span></td></tr>
+        <tr><td class="cap">Scale / DR / compliance</td><td class="note">POC-grade; premium brings HA, disaster recovery, certifications.</td><td class="v"><span class="pill prem">▲ premium leads</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grp">Fit, cost & ownership — where focused wins</div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Capability</th><th>How KMForge does it</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="cap">Fit to your process</td><td class="note">Built around mixer manufacturing; shows only what matters. Premium is generic and needs heavy configuration.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+        <tr><td class="cap">Time to value</td><td class="note">Days, not the multi-month implementations premium typically needs.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+        <tr><td class="cap">Total cost</td><td class="note">A fraction of premium per-user licensing + consultants.</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+        <tr><td class="cap">Branding / ownership</td><td class="note">White-label — it's <em>your</em> product, not "we run on SAP."</td><td class="v"><span class="pill good">✓ done right</span></td></tr>
+      </tbody>
+    </table></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">The principle</p>
+    <h2>What "done the right way" means here</h2>
+    <p>Beyond features, a few architectural choices are simply correct — and worth naming, because
+      they&rsquo;re why the foundation is solid even though the breadth is young:</p>
+    <div class="arch">
+      <div class="card good"><div class="t">✓ Right</div><h4>Controls enforced in the engine</h4><p>QA and inward-QC gates are server-side rules — they can&rsquo;t be bypassed from the UI or an API. Many ERP rollouts leave these as optional process. Ours can&rsquo;t be skipped.</p></div>
+      <div class="card good"><div class="t">✓ Right</div><h4>One source of truth</h4><p>Parts, quantities, costs and stock live in one connected model. No parallel spreadsheets to drift.</p></div>
+      <div class="card good"><div class="t">✓ Right</div><h4>Documents that link themselves</h4><p>Auto-numbered references with an Origin trail give real traceability from order to receipt, for free.</p></div>
+      <div class="card good"><div class="t">✓ Right</div><h4>Complexity hidden, not removed</h4><p>The full engine is underneath; the UI shows only the customer&rsquo;s real workflow. Power without the clutter.</p></div>
+      <div class="card gap"><div class="t">▲ Gap</div><h4>Finance isn&rsquo;t wired in</h4><p>Operations are correct, but they don&rsquo;t yet post to accounts. For a full ERP that loop has to close.</p></div>
+      <div class="card gap"><div class="t">▲ Gap</div><h4>Governance is thin</h4><p>Roles, approvals, audit and real auth need to be built before this is trusted with many users.</p></div>
+    </div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Bottom line</p>
+    <h2>The honest verdict</h2>
+    <div class="note green"><span class="tag">Where we stand</span>
+      <p>The <b>foundation is done right</b> — real manufacturing engine, enforced controls, connected
+        data, correct costing. On the core make-buy-stock loop we&rsquo;re genuinely <b>on par</b> with
+        premium, because we stand on the same proven engine — and on enforced quality and inward controls
+        we&rsquo;re arguably <b>ahead of a default premium install</b>.</p>
+      <p>Premium ERP wins decisively on <b>breadth</b>: integrated finance, traceability, planning,
+        governance and scale. Those are real, and we&rsquo;ve named them — not hidden them.</p>
+      <p><b>For this customer</b> — a focused manufacturer with five concrete pain points — KMForge is the
+        better <em>fit</em> and the better <em>value</em> today. It is a sharp, correct subset, not a
+        replacement for enterprise ERP at scale. The roadmap (finance, traceability, roles) is exactly the
+        path from "excellent fit" to "full platform."</p>
+    </div>
+  </div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>KMForge — Manufacturing Cloud · by KMatrix AI</span>
+  <span>Honest scorecard vs premium ERP · POC assessment</span>
+</div></footer>
+
+<script>
+  (function(){var b=document.getElementById("themebtn");b.addEventListener("click",function(){var r=document.documentElement,c=r.getAttribute("data-theme");if(!c)c=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";r.setAttribute("data-theme",c==="dark"?"light":"dark");});})();
+</script>
