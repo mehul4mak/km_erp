@@ -1,0 +1,222 @@
+<title>KMForge — Reading the System: References, Connections & the Dashboard</title>
+<style>
+  :root{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--violet:#6b5ca8;--violet-wash:#ece8f6;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--amber-wash:#f6ead3;
+    --shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);
+    --font-display:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;--font-sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--violet:#9d8fd6;--violet-wash:#211b34;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--amber-wash:#2a2012;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}}
+  :root[data-theme="light"]{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--violet:#6b5ca8;--violet-wash:#ece8f6;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--amber-wash:#f6ead3;--shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);}
+  :root[data-theme="dark"]{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--violet:#9d8fd6;--violet-wash:#211b34;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--amber-wash:#2a2012;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px;}
+  .topband{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20;}
+  .topband .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 24px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:16px;}
+  .brand .mark b{color:var(--copper);}
+  .brand .sub{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .themebtn{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:6px 12px;cursor:pointer;}
+  .themebtn:hover{border-color:var(--copper);color:var(--copper);}
+  .themebtn:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
+
+  .hero{padding:56px 0 24px;}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--copper);font-weight:600;display:flex;align-items:center;gap:12px;}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line-strong);max-width:130px;}
+  h1{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:16px 0 0;text-wrap:balance;max-width:20ch;}
+  .lede{font-size:1.15rem;color:var(--ink-soft);margin:18px 0 0;max-width:64ch;}
+
+  section{padding:36px 0;border-top:1px solid var(--line);}
+  .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper);font-weight:600;margin:0 0 6px;}
+  h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:clamp(1.4rem,3.2vw,1.9rem);margin:0 0 12px;text-wrap:balance;}
+  p{color:var(--ink-soft);max-width:68ch;margin:0 0 14px;}
+  .ink{color:var(--ink);font-weight:600;}
+  code{font-family:var(--font-mono);}
+
+  /* anatomy */
+  .anatomy{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:34px 28px 26px;margin:8px 0 22px;text-align:center;}
+  .ref{display:inline-flex;align-items:stretch;gap:8px;font-family:var(--font-mono);font-weight:700;font-size:clamp(1.6rem,5vw,2.6rem);letter-spacing:-.01em;}
+  .ref .seg{position:relative;padding:8px 16px;border-radius:8px;}
+  .ref .seg.wh{background:var(--steel-wash);color:var(--steel);}
+  .ref .seg.mo{background:var(--copper-wash);color:var(--copper-deep);}
+  .ref .seg.num{background:var(--violet-wash);color:var(--violet);}
+  .ref .slash{color:var(--ink-faint);display:flex;align-items:center;}
+  .legs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px;text-align:left;}
+  @media(max-width:640px){.legs{grid-template-columns:1fr;}}
+  .leg{border-top:2px solid var(--line-strong);padding-top:10px;}
+  .leg.wh{border-color:var(--steel);}.leg.mo{border-color:var(--copper);}.leg.num{border-color:var(--violet);}
+  .leg .t{font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;}
+  .leg.wh .t{color:var(--steel);}.leg.mo .t{color:var(--copper-deep);}.leg.num .t{color:var(--violet);}
+  .leg p{font-size:.9rem;margin:0;}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);margin:6px 0 10px;}
+  table{width:100%;border-collapse:collapse;min-width:560px;background:var(--surface);}
+  th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top;}
+  thead th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;background:var(--surface-2);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.code{font-family:var(--font-mono);font-weight:700;color:var(--copper-deep);white-space:nowrap;}
+  td.small{font-size:.92rem;}
+
+  /* connection graph */
+  .graph{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px 4px;margin:8px 0 14px;overflow-x:auto;}
+  .lane{display:grid;grid-template-columns:120px 1fr;gap:0;align-items:stretch;min-width:640px;}
+  .lane .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:18px 14px;display:flex;align-items:center;border-right:1px solid var(--line);}
+  .lane.sell .tag{color:var(--steel);}.lane.buy .tag{color:var(--copper-deep);}.lane.make .tag{color:var(--violet);}.lane.ship .tag{color:var(--verified);}
+  .lane .body{padding:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .lane + .lane{border-top:1px solid var(--line);}
+  .doc{border:1px solid var(--line-strong);border-radius:9px;padding:9px 13px;background:var(--surface-2);min-width:0;}
+  .doc .id{font-family:var(--font-mono);font-weight:700;font-size:.92rem;}
+  .doc .d{font-size:.76rem;color:var(--ink-faint);margin-top:1px;}
+  .doc.sell{border-color:color-mix(in srgb,var(--steel) 45%,transparent);}
+  .doc.buy{border-color:color-mix(in srgb,var(--copper) 50%,transparent);}
+  .doc.make{border-color:color-mix(in srgb,var(--violet) 45%,transparent);}
+  .doc.ship{border-color:color-mix(in srgb,var(--verified) 45%,transparent);}
+  .arrow{color:var(--ink-faint);font-weight:700;font-family:var(--font-mono);display:flex;flex-direction:column;align-items:center;font-size:1.1rem;line-height:1;}
+  .arrow small{font-size:8.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--copper);margin-top:2px;font-weight:700;}
+  .nest{font-family:var(--font-mono);font-size:10px;color:var(--violet);border:1px dashed var(--violet);border-radius:6px;padding:2px 7px;}
+
+  .note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--copper);border-radius:5px;padding:14px 18px;margin:14px 0;}
+  .note .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--copper-deep);font-weight:700;display:block;margin-bottom:5px;}
+  .note p{margin:0;}
+  .note code{background:var(--surface);border:1px solid var(--line);padding:.05em .35em;border-radius:4px;color:var(--copper-deep);}
+
+  /* dashboard mapping */
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:8px 0 0;}
+  @media(max-width:640px){.kpis{grid-template-columns:1fr;}}
+  .kpi{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:16px 18px;border-left:3px solid var(--copper);}
+  .kpi .name{font-family:var(--font-display);font-weight:700;font-size:1rem;}
+  .kpi .from{font-family:var(--font-mono);font-size:11.5px;color:var(--copper-deep);margin:6px 0 4px;}
+  .kpi p{font-size:.9rem;margin:0;}
+
+  footer{border-top:1px solid var(--line);padding:24px 0 46px;}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+</style>
+
+<div class="topband"><div class="wrap">
+  <div class="brand"><span class="mark">KM<b>Forge</b></span><span class="sub">Reading the System</span></div>
+  <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">Theme</button>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">How to read your documents</div>
+  <h1>Those reference numbers aren't random — they're the map.</h1>
+  <p class="lede">Every order, job, receipt and delivery gets a reference the system creates on
+    its own. Once you can read one, you can follow any product from a customer order all the way to
+    the finished box — and the dashboard is just a live tally of all of them.</p>
+</div></header>
+
+<main>
+  <section><div class="wrap">
+    <p class="kicker">Part 1 · The anatomy</p>
+    <h2>Reading a reference number</h2>
+    <p>Take a real one from your system — the job that builds the motor:</p>
+    <div class="anatomy">
+      <div class="ref">
+        <span class="seg wh">WH</span><span class="slash">/</span>
+        <span class="seg mo">MO</span><span class="slash">/</span>
+        <span class="seg num">00002</span>
+      </div>
+      <div class="legs">
+        <div class="leg wh"><div class="t">WH — the plant</div><p>Which warehouse it belongs to. You have one: your Delhi NCR unit.</p></div>
+        <div class="leg mo"><div class="t">MO — the type</div><p>What kind of document. <b>MO</b> = Manufacturing Order (a job on the floor).</p></div>
+        <div class="leg num"><div class="t">00002 — the count</div><p>The running number. This is the <b>2nd</b> manufacturing job ever created.</p></div>
+      </div>
+    </div>
+    <p>That's the whole trick. The system keeps a separate counter per document type and stamps the
+      next number automatically — you never type it. Here's the full family you'll see:</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Looks like</th><th>What it is</th><th>Born when…</th></tr></thead>
+      <tbody>
+        <tr><td class="code">S00001</td><td class="small">Sales order / quotation</td><td class="small">you raise a quote for a customer</td></tr>
+        <tr><td class="code">P00001</td><td class="small">Purchase order to a vendor</td><td class="small">components need buying</td></tr>
+        <tr><td class="code">WH/MO/00001</td><td class="small">Manufacturing Order — a production job</td><td class="small">an order needs something built</td></tr>
+        <tr><td class="code">WH/IN/00001</td><td class="small">Goods Receipt (incoming) — the GRN</td><td class="small">a purchase order is confirmed</td></tr>
+        <tr><td class="code">WH/OUT/00001</td><td class="small">Delivery (outgoing) to the customer</td><td class="small">an order is ready to ship</td></tr>
+        <tr><td class="code">OP/00023</td><td class="small">Internal move — stock shifting inside the plant</td><td class="small">material moves between locations</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.9rem;color:var(--ink-faint)"><b>IN</b> = inward, <b>OUT</b> = outward,
+      <b>MO</b> = make, <b>OP</b> = internal operation. Read left to right: <i>plant / type / number.</i></p>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Part 2 · The connections</p>
+    <h2>How one order becomes a whole chain</h2>
+    <p>This is your real order <span class="ink">S00001</span> (Sharma Distributors, 10 × REMI STORM).
+      Confirming it made the system create everything below — and each document carries an
+      <span class="ink">Origin</span> stamp pointing back to where it came from. That Origin is the thread.</p>
+
+    <div class="graph">
+      <div class="lane sell">
+        <div class="tag">Sell</div>
+        <div class="body">
+          <div class="doc sell"><div class="id">S00001</div><div class="d">Order · Sharma · ₹20,616</div></div>
+          <div class="arrow">→<small>fans out into</small></div>
+          <div style="font-size:.82rem;color:var(--ink-faint);font-family:var(--font-mono)">a make side, a buy side<br>and a delivery ↓</div>
+        </div>
+      </div>
+      <div class="lane make">
+        <div class="tag">Make</div>
+        <div class="body">
+          <div class="doc make"><div class="id">WH/MO/00001</div><div class="d">Build REMI ×10 · origin S00001</div></div>
+          <div class="arrow">→<small>needs a motor</small></div>
+          <div class="doc make"><div class="id">WH/MO/00002</div><div class="d">Build Motor ×10 · origin WH/MO/00001</div></div>
+          <span class="nest">nested job</span>
+        </div>
+      </div>
+      <div class="lane buy">
+        <div class="tag">Buy</div>
+        <div class="body">
+          <div class="doc buy"><div class="id">P00001</div><div class="d">Buy 70 parts · Veeha · origin = the MOs</div></div>
+          <div class="arrow">→<small>confirm PO</small></div>
+          <div class="doc buy"><div class="id">WH/IN/00001</div><div class="d">GRN · origin P00001 · received ✓</div></div>
+          <div class="arrow">→<small>inward QC</small></div>
+          <div class="doc buy" style="border-style:solid;background:var(--verified-wash)"><div class="id" style="color:var(--verified)">STORE</div><div class="d">stock, FIFO</div></div>
+        </div>
+      </div>
+      <div class="lane ship">
+        <div class="tag">Ship</div>
+        <div class="body">
+          <div class="doc ship"><div class="id">WH/OUT/00001</div><div class="d">Deliver to Sharma · origin S00001</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note"><span class="tag">The one field that connects everything</span>
+      <p>Every document has an <code>Origin</code> — a plain-language "where did this come from." The
+        motor job's origin is <code>WH/MO/00001</code> (the mixer job that needs it). The receipt's origin
+        is <code>P00001</code>. The delivery's origin is <code>S00001</code>. Follow the Origin trail and
+        you can walk from the finished box all the way back to the customer's order — that's full traceability,
+        built in.</p></div>
+    <p style="font-size:.9rem;color:var(--ink-faint)">Behind the scenes the system also groups the whole
+      chain under one invisible thread (a "procurement group", here named after S00001) so it always knows
+      these documents belong together — which is how the Order page can list a job's siblings.</p>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Part 3 · The dashboard</p>
+    <h2>The dashboard is a live tally of those documents</h2>
+    <p>Nothing on the dashboard is entered by hand. Each tile is the system counting one type of
+      document in real time — so it always shows what's actually going on right now:</p>
+    <div class="kpis">
+      <div class="kpi"><div class="name">Confirmed Order Value</div><div class="from">◂ sums confirmed S##### orders</div><p>Total value of customer orders that are confirmed — money committed on the floor.</p></div>
+      <div class="kpi"><div class="name">Quotes in Pipeline</div><div class="from">◂ counts draft/sent S##### quotes</div><p>Quotations not yet confirmed — your sales pipeline.</p></div>
+      <div class="kpi"><div class="name">Jobs on the Floor</div><div class="from">◂ counts open WH/MO/##### jobs</div><p>Manufacturing orders in progress — what production is working on.</p></div>
+      <div class="kpi"><div class="name">Purchases Pending</div><div class="from">◂ counts unconfirmed P##### orders</div><p>RFQs waiting to be confirmed into purchase orders.</p></div>
+      <div class="kpi"><div class="name">Items to Replenish</div><div class="from">◂ counts components below their min</div><p>Parts at or under their reorder point — buy these before you run out.</p></div>
+      <div class="kpi"><div class="name">Recent Orders / On the Floor</div><div class="from">◂ latest S##### and WH/MO/#####</div><p>The two live lists — newest customer orders and current jobs, click through to the document.</p></div>
+    </div>
+    <div class="note" style="border-left-color:var(--verified)"><span class="tag" style="color:var(--verified)">How to use it</span>
+      <p>Read the dashboard top-left to bottom-right: <b>is money coming in</b> (order value, pipeline),
+        <b>is the floor busy</b> (jobs), <b>are we buying what we need</b> (purchases, replenish). When a
+        number looks wrong, click into that list — every tile drills straight down to the documents behind it.</p></div>
+  </div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>KMForge — Manufacturing Cloud · by KMatrix AI</span>
+  <span>Reading the system · references, links &amp; the dashboard</span>
+</div></footer>
+
+<script>
+  (function(){var b=document.getElementById("themebtn");b.addEventListener("click",function(){var r=document.documentElement,c=r.getAttribute("data-theme");if(!c)c=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";r.setAttribute("data-theme",c==="dark"?"light":"dark");});})();
+</script>
