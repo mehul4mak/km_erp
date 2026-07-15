@@ -76,4 +76,60 @@ export async function markProductionDone(moId) {
 export async function confirmPurchase(poId) {
   await callKw("purchase.order", "button_confirm", [[poId]]);
   revalidatePath("/purchasing");
+  revalidatePath("/goods-receipt");
+}
+
+// ---- Contacts (customers & vendors) ----
+export async function createCustomer(formData) {
+  await callKw("res.partner", "create", [
+    {
+      name: formData.get("name"),
+      email: formData.get("email") || false,
+      phone: formData.get("phone") || false,
+      city: formData.get("city") || false,
+      customer_rank: 1,
+    },
+  ]);
+  revalidatePath("/customers");
+  redirect("/customers");
+}
+
+export async function createVendor(formData) {
+  await callKw("res.partner", "create", [
+    {
+      name: formData.get("name"),
+      email: formData.get("email") || false,
+      phone: formData.get("phone") || false,
+      city: formData.get("city") || false,
+      supplier_rank: 1,
+    },
+  ]);
+  revalidatePath("/customers");
+  redirect("/customers");
+}
+
+// ---- Goods receipt: inward quality inspection + post to store ----
+export async function recordInwardResult(pickingId, result, formData) {
+  const note = formData?.get?.("note") || false;
+  await callKw("stock.picking", "action_set_inward_result", [[pickingId], result, note]);
+  revalidatePath("/goods-receipt");
+}
+
+export async function receiveToStore(pickingId) {
+  try {
+    await callKw("stock.picking", "action_receive_to_store", [[pickingId]]);
+  } catch (e) {
+    redirect(`/goods-receipt?blocked=${encodeURIComponent(e.message)}`);
+  }
+  revalidatePath("/goods-receipt");
+  revalidatePath("/inventory");
+  revalidatePath("/requisitions");
+}
+
+// ---- Material requisition: reserve components for a manufacturing job (FIFO) ----
+export async function reserveForJob(moId) {
+  await callKw("mrp.production", "action_assign", [[moId]]);
+  revalidatePath("/requisitions");
+  revalidatePath("/production");
+  revalidatePath("/inventory");
 }

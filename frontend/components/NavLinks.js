@@ -7,17 +7,20 @@ const LINKS = [
   { section: "Overview" },
   { href: "/", label: "Dashboard", ico: "◧" },
   { href: "/getting-started", label: "Getting Started", ico: "ⓘ" },
+  { href: "/customers", label: "Contacts", ico: "☺" },
   { section: "Sell" },
   { href: "/costsheets", label: "Cost Sheets", ico: "₹" },
   { href: "/orders", label: "Orders & Quotes", ico: "▤" },
   { section: "Make" },
   { href: "/production", label: "Production", ico: "⚙" },
+  { href: "/requisitions", label: "Material Requisition", ico: "◱" },
   { href: "/quality", label: "Quality Gates", ico: "✓" },
   { section: "Stock" },
   { href: "/inventory", label: "Inventory", ico: "▦" },
   { href: "/movements", label: "Movements", ico: "⇅" },
   { section: "Buy" },
   { href: "/purchasing", label: "Purchasing", ico: "⇄" },
+  { href: "/goods-receipt", label: "Goods Receipt", ico: "⇩" },
 ];
 
 export default function NavLinks() {
