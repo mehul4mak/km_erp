@@ -1,0 +1,210 @@
+<title>Make-to-Stock — Logical Plan | KMForge</title>
+<style>
+  :root{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--amber-wash:#f6ead3;--red:#b0402c;--red-wash:#f4e2dd;
+    --shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);
+    --font-display:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;--font-sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--amber-wash:#2a2012;--red:#d3775f;--red-wash:#2c1813;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}}
+  :root[data-theme="light"]{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--amber-wash:#f6ead3;--red:#b0402c;--red-wash:#f4e2dd;--shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);}
+  :root[data-theme="dark"]{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--amber-wash:#2a2012;--red:#d3775f;--red-wash:#2c1813;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);line-height:1.62;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px;}
+  .topband{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20;}
+  .topband .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 24px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:16px;}
+  .brand .mark b{color:var(--copper);}
+  .brand .sub{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .themebtn{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:6px 12px;cursor:pointer;}
+  .themebtn:hover{border-color:var(--copper);color:var(--copper);}
+
+  .hero{padding:52px 0 22px;}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--copper);font-weight:600;display:flex;align-items:center;gap:12px;}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line-strong);max-width:120px;}
+  h1{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:16px 0 0;text-wrap:balance;max-width:20ch;}
+  .lede{font-size:1.14rem;color:var(--ink-soft);margin:18px 0 0;max-width:66ch;}
+
+  section{padding:32px 0;border-top:1px solid var(--line);}
+  .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper);font-weight:600;margin:0 0 6px;}
+  h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:clamp(1.4rem,3.2vw,1.9rem);margin:0 0 12px;text-wrap:balance;}
+  p{color:var(--ink-soft);max-width:68ch;margin:0 0 14px;}
+  .ink{color:var(--ink);font-weight:600;}
+  code{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);border:1px solid var(--line);padding:.06em .36em;border-radius:4px;color:var(--copper-deep);}
+
+  .formula{font-family:var(--font-mono);background:var(--code-bg,#24201a);color:#ece3d3;border-radius:10px;padding:16px 20px;font-size:14px;box-shadow:var(--shadow);overflow-x:auto;}
+  .formula b{color:#d99a5e;}
+
+  .diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:22px 16px;margin:8px 0 10px;overflow-x:auto;}
+  .diagram pre.mermaid{background:transparent;margin:0;display:flex;justify-content:center;min-width:560px;}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block;}
+  .lg-stock{background:#cfe6d6;border:1px solid #2e7a50;}
+  .lg-make{background:#f0dcc4;border:1px solid #b0642c;}
+  .lg-buy{background:#d5e2e8;border:1px solid #3f5d6b;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:6px 0;}
+  @media(max-width:680px){.two{grid-template-columns:1fr;}}
+  .col{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:18px 20px;}
+  .col.now{border-top:3px solid var(--red);}
+  .col.next{border-top:3px solid var(--verified);}
+  .col h3{margin:0 0 3px;font-family:var(--font-display);font-size:1.05rem;}
+  .col .t{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;}
+  .col.now .t{color:var(--red);}.col.next .t{color:var(--verified);}
+  .col ul{margin:0;padding:0;list-style:none;display:grid;gap:9px;}
+  .col li{font-size:.92rem;color:var(--ink-soft);display:flex;gap:8px;}
+  .col li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;margin-top:7px;}
+  .col.now li::before{background:var(--red);}.col.next li::before{background:var(--verified);}
+
+  .steps{counter-reset:s;display:grid;gap:12px;margin:6px 0;}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;}
+  .step .n{counter-increment:s;font-family:var(--font-mono);font-weight:700;color:#fff;background:var(--copper);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px;}
+  .step .n::before{content:counter(s);}
+  .step b{font-family:var(--font-display);}
+  .step p{margin:3px 0 0;font-size:.93rem;}
+
+  .note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--copper);border-radius:5px;padding:14px 18px;margin:14px 0;}
+  .note .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--copper-deep);font-weight:700;display:block;margin-bottom:5px;}
+  .note p{margin:0;}
+  .note.green{border-left-color:var(--verified);}.note.green .tag{color:var(--verified);}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;min-width:560px;background:var(--surface);}
+  th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.92rem;}
+  thead th{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;background:var(--surface-2);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.case{font-weight:600;white-space:nowrap;}
+  td.exp{font-family:var(--font-mono);font-size:.82rem;color:var(--copper-deep);white-space:nowrap;}
+
+  footer{border-top:1px solid var(--line);padding:24px 0 46px;}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+</style>
+
+<div class="topband"><div class="wrap">
+  <div class="brand"><span class="mark">KM<b>Forge</b></span><span class="sub">Planning</span></div>
+  <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">Theme</button>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Item 7 · make only the shortfall</div>
+  <h1>Netting demand against stock — the logic, before we build it.</h1>
+  <p class="lede">Today a confirmed sale always creates a manufacturing job, even if the mixers are
+    already on the shelf. This is the plan to fix that: reserve from stock first, and make or buy
+    <em>only</em> what's genuinely short — the classic ERP idea of <b>net requirements</b>.</p>
+</div></header>
+
+<main>
+  <section><div class="wrap">
+    <p class="kicker">The one rule</p>
+    <h2>Net requirements</h2>
+    <p>Every decision below comes from a single formula, applied at each level of the BOM:</p>
+    <div class="formula">
+      <b>Net</b> = Ordered quantity &nbsp;−&nbsp; Free in stock &nbsp;−&nbsp; Already on order<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;If Net ≤ 0 → reserve from stock, make nothing<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;If Net &gt; 0 → make / buy the Net only
+    </div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">The decision flow</p>
+    <h2>What happens when an order is confirmed</h2>
+    <div class="diagram">
+<pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-monospace, monospace','fontSize':'14px','lineColor':'#8a8072','primaryColor':'#f6f2ea','primaryBorderColor':'#8a8072','primaryTextColor':'#201c15'}}}%%
+flowchart TD
+  A([Sale order confirmed]) --> B{"Finished good<br/>in free stock?"}
+  B -->|"Enough on hand"| C["Reserve and ship<br/>from stock. No job."]:::stock
+  B -->|"Short by N"| D["Reserve what's available<br/>Create MO for N only"]:::make
+  D --> E{"For each BOM<br/>component of N"}
+  E --> F{"Bought-in part<br/>in free stock?"}
+  E --> G{"Semi-finished<br/>in free stock?"}
+  F -->|"Enough"| H["Reserve for job"]:::stock
+  F -->|"Short"| I["Raise PO<br/>for the shortfall"]:::buy
+  G -->|"Enough"| J["Reserve for job"]:::stock
+  G -->|"Short"| K["Create sub-MO<br/>for the shortfall"]:::make
+  K -.->|"recurse"| E
+  classDef stock fill:#dcece1,stroke:#2e7a50,color:#173a25;
+  classDef make fill:#f0dcc4,stroke:#b0642c,color:#3a1e0c;
+  classDef buy fill:#d7e2e8,stroke:#3f5d6b,color:#152730;
+</pre>
+    </div>
+    <div class="legend">
+      <span><i class="lg-stock"></i> reserve from existing stock</span>
+      <span><i class="lg-make"></i> manufacture the shortfall (MO)</span>
+      <span><i class="lg-buy"></i> purchase the shortfall (PO)</span>
+    </div>
+    <div class="note"><span class="tag">Read it in one line</span>
+      <p>Ship from stock where you can; drop to a job only for the shortfall; that job pulls components
+        the same way — reserve if in store, otherwise a sub-job (semi-finished) or a purchase (bought-in).
+        The dotted arrow is the recursion: a sub-assembly shortfall runs the same test on <em>its</em> parts.</p></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Why it changes</p>
+    <h2>Today vs proposed</h2>
+    <div class="two">
+      <div class="col now"><div class="t">✗ Today — make-to-order</div>
+        <h3>Always manufactures</h3>
+        <ul>
+          <li>Every finished good carries the <b>MTO</b> ("replenish on order") route</li>
+          <li>MTO means "make the full ordered quantity" — it never looks at stock</li>
+          <li>So 10 ordered = an MO for 10, even if 10 are on the shelf</li>
+          <li>Great for the cascade demo; wrong for a real factory with stock</li>
+        </ul>
+      </div>
+      <div class="col next"><div class="t">✓ Proposed — net requirements</div>
+        <h3>Makes only the gap</h3>
+        <ul>
+          <li>Finished goods reserve from stock first</li>
+          <li>An MO is created only for the shortfall (Ordered − Free)</li>
+          <li>Enough stock → <b>no job at all</b>, ships straight from the store</li>
+          <li>Components net the same way — PO only for what's short</li>
+        </ul>
+      </div>
+    </div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">How we'd build it</p>
+    <h2>The change, in five moves</h2>
+    <div class="steps">
+      <div class="step"><span class="n"></span><div><b>Drop the MTO route</b> from finished goods and semi-finished sub-assemblies.<p>Removes the "always make the full qty" behaviour. Keep the Manufacture and Buy routes.</p></div></div>
+      <div class="step"><span class="n"></span><div><b>Add a small planning addon</b> (<code>mfg_planning</code>) that extends <code>sale.order.action_confirm</code>.<p>On confirm, for each manufacturable line: read free stock, reserve the available part, and create an MO for the shortfall only — then let it cascade.</p></div></div>
+      <div class="step"><span class="n"></span><div><b>Net the components too</b> inside that MO.<p>The job reserves in-store components; raises a sub-MO for a short semi-finished, or a PO for a short bought-in part. This is Odoo's reservation already — we just stop MTO from over-ordering.</p></div></div>
+      <div class="step"><span class="n"></span><div><b>Show the split on the order.</b><p>Add a line to the order page: "<span class="ink">Reserved from stock: 4 · To manufacture: 6</span>" so the netting is visible, not hidden.</p></div></div>
+      <div class="step"><span class="n"></span><div><b>Re-verify the golden demo path.</b><p>Confirm the flagship order still cascades correctly when stock is empty — the behaviour must be identical to today at zero stock.</p></div></div>
+    </div>
+    <div class="note"><span class="tag">One judgement call</span>
+      <p>Two ways to handle the shortfall: <b>(A)</b> a custom confirm hook that makes the shortfall
+        immediately (recommended — matches "manufacture to fulfil this order"), or <b>(B)</b> pure
+        make-to-stock via min/max reorder rules (simpler, but the sale waits for the next stock batch and
+        decouples order from job). I recommend <b>A</b>.</p></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Proof it works</p>
+    <h2>Test cases to verify</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Scenario</th><th>Free finished stock</th><th>Expected result</th><th>Net</th></tr></thead>
+      <tbody>
+        <tr><td class="case">Empty shelf</td><td>0</td><td>MO for full 10 (same as today) + component cascade</td><td class="exp">10</td></tr>
+        <tr><td class="case">Partial stock</td><td>4</td><td>Reserve 4 from stock · MO for 6 only</td><td class="exp">6</td></tr>
+        <tr><td class="case">Fully covered</td><td>12</td><td>Reserve 10, ship — no MO created at all</td><td class="exp">0</td></tr>
+        <tr><td class="case">Short a component</td><td>0 (make 10)</td><td>MO for 10 · PO only for the component that's below need</td><td class="exp">per part</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note green"><span class="tag">Risk to watch</span>
+      <p>Changing routes touches the cascade the whole demo rests on. The mitigation is test case 1: at zero
+        stock the behaviour must be byte-for-byte what it is today. We build behind that guarantee, then layer
+        the stock-netting on top.</p></div>
+  </div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>KMForge — Manufacturing Cloud · by KMatrix AI</span>
+  <span>Make-to-stock / net requirements · implementation plan</span>
+</div></footer>
+
+<script>
+  (function(){var b=document.getElementById("themebtn");b.addEventListener("click",function(){var r=document.documentElement,c=r.getAttribute("data-theme");if(!c)c=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";r.setAttribute("data-theme",c==="dark"?"light":"dark");});})();
+</script>
