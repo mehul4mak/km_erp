@@ -17,30 +17,45 @@ export default async function OrderDetail({ params }) {
       "state",
       "date_order",
       "client_order_ref",
-      "procurement_group_id",
       "order_line",
     ],
   ]);
 
-  const [lines, mos, pos] = await Promise.all([
+  // Documents link via their Origin field: the top-level MO's origin is the
+  // SO, a nested sub-assembly MO's origin is its parent MO, and the PO's
+  // origin lists the MOs it buys for — so we chase the chain, not the
+  // procurement group (each MO gets its own group in Odoo 17).
+  const [lines, topMos] = await Promise.all([
     searchRead(
       "sale.order.line",
       [["order_id", "=", soId]],
       ["product_id", "product_uom_qty", "price_unit", "price_subtotal"]
     ),
-    so.procurement_group_id
-      ? searchRead(
-          "mrp.production",
-          [["procurement_group_id", "=", so.procurement_group_id[0]]],
-          ["name", "product_id", "product_qty", "state"]
-        )
-      : [],
     searchRead(
-      "purchase.order",
-      [["origin", "like", so.name]],
-      ["name", "partner_id", "amount_total", "state", "order_line"]
+      "mrp.production",
+      [["origin", "=", so.name]],
+      ["name", "product_id", "product_qty", "state"]
     ),
   ]);
+  const nestedMos = topMos.length
+    ? await searchRead(
+        "mrp.production",
+        [["origin", "in", topMos.map((m) => m.name)]],
+        ["name", "product_id", "product_qty", "state"]
+      )
+    : [];
+  const mos = [...topMos, ...nestedMos];
+
+  const originTerms = [so.name, ...mos.map((m) => m.name)];
+  const poDomain = [
+    ...Array(originTerms.length - 1).fill("|"),
+    ...originTerms.map((t) => ["origin", "like", t]),
+  ];
+  const pos = await searchRead(
+    "purchase.order",
+    poDomain,
+    ["name", "partner_id", "amount_total", "state", "order_line"]
+  );
 
   const confirm = confirmOrder.bind(null, soId);
   const confirmed = ["sale", "done"].includes(so.state);

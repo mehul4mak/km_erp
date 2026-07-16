@@ -98,6 +98,11 @@ export default function GettingStarted() {
               <td><span className="badge blue">Overview</span></td>
             </tr>
             <tr>
+              <td><b>Contacts</b></td>
+              <td>Add and manage your customers and vendors.</td>
+              <td><span className="badge gray">Master data</span></td>
+            </tr>
+            <tr>
               <td><b>Cost Sheets</b></td>
               <td>Price a product live from its bill of materials; set rejection &amp; profit %, apply to quotes.</td>
               <td><span className="badge gray">Stale Excel sheets</span></td>
@@ -111,6 +116,16 @@ export default function GettingStarted() {
               <td><b>Production</b></td>
               <td>Track manufacturing jobs with live material readiness before you promise a date.</td>
               <td><span className="badge gray">Manual availability checks</span></td>
+            </tr>
+            <tr>
+              <td><b>Can I Build?</b></td>
+              <td>Check feasibility for any quantity — walks the whole BOM tree and names the root blocker.</td>
+              <td><span className="badge gray">Guesswork planning</span></td>
+            </tr>
+            <tr>
+              <td><b>Material Requisition</b></td>
+              <td>Reserve and earmark a job&rsquo;s components from the store (FIFO) before production starts.</td>
+              <td><span className="badge gray">Unmarked material</span></td>
             </tr>
             <tr>
               <td><b>Quality Gates</b></td>
@@ -131,6 +146,11 @@ export default function GettingStarted() {
               <td><b>Purchasing</b></td>
               <td>Confirm the RFQs that orders raise into purchase orders to your vendors.</td>
               <td><span className="badge gray">Manual procurement</span></td>
+            </tr>
+            <tr>
+              <td><b>Goods Receipt</b></td>
+              <td>Inspect every vendor delivery (GRN); only an accepted lot can be received into the store.</td>
+              <td><span className="badge gray">Uninspected inward stock</span></td>
             </tr>
           </tbody>
         </table>

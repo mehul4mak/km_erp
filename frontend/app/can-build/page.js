@@ -70,10 +70,9 @@ export default async function CanBuild({ searchParams }) {
   let tree = null;
   if (chosen) tree = explode(chosen, qty, 0);
   const causes = Object.values(rootCauses);
-  const blocked = tree && (causes.length > 0 || tree.short > 0 && tree.children.length === 0);
   const buildable = tree && causes.length === 0;
 
-  const StatusBadge = ({ n }) => {
+  const NodeBadge = ({ n }) => {
     if (n.depth === 0)
       return null;
     if (n.short <= 0)
@@ -94,7 +93,7 @@ export default async function CanBuild({ searchParams }) {
         </td>
         <td className="num">{n.needed}</td>
         <td className="num">{n.free}</td>
-        <td><StatusBadge n={n} /></td>
+        <td><NodeBadge n={n} /></td>
       </tr>
       {n.children.map((c) => <Row key={`${c.id}-${c.depth}-${c.needed}`} n={c} />)}
     </>

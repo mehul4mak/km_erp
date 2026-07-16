@@ -52,7 +52,10 @@ class StockPicking(models.Model):
                 Check.create({"picking_id": p.id})
 
     def action_set_inward_result(self, result, note=False):
-        """Record the inward inspection outcome from the portal."""
+        """Record the inward inspection outcome from the portal. A rejection
+        re-opens the gate as a fresh pending check (same pattern as the
+        manufacturing QA gates) so the lot must be re-inspected after the
+        vendor reworks or redelivers."""
         for p in self:
             p._ensure_inward_check()
             check = (p.inward_check_ids.filtered(lambda c: c.state == "pending")[:1]
@@ -63,6 +66,9 @@ class StockPicking(models.Model):
                 "checked_by": self.env.uid,
                 "checked_on": fields.Datetime.now(),
             })
+            if result == "fail":
+                check.copy({"state": "pending", "note": False,
+                            "checked_by": False, "checked_on": False})
         return True
 
     def action_receive_to_store(self):

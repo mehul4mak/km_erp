@@ -22,9 +22,9 @@ export default async function CostSheets() {
   const tmpls = await searchRead(
     "product.template",
     [["id", "in", tmplIds]],
-    ["list_price"]
+    ["list_price", "sale_ok"]
   );
-  const priceOf = Object.fromEntries(tmpls.map((t) => [t.id, t.list_price]));
+  const tmplOf = Object.fromEntries(tmpls.map((t) => [t.id, t]));
 
   return (
     <Shell
@@ -47,8 +47,10 @@ export default async function CostSheets() {
           </thead>
           <tbody>
             {boms.map((b) => {
-              const current = priceOf[b.product_tmpl_id[0]] || 0;
-              const stale = Math.abs(current - b.cs_suggested_price) > 0.5;
+              const tmpl = tmplOf[b.product_tmpl_id[0]] || {};
+              const saleable = tmpl.sale_ok !== false;
+              const current = tmpl.list_price || 0;
+              const stale = saleable && Math.abs(current - b.cs_suggested_price) > 0.5;
               return (
                 <tr key={b.id}>
                   <td style={{ fontWeight: 600 }}>{b.product_tmpl_id[1]}</td>
@@ -60,8 +62,14 @@ export default async function CostSheets() {
                     {inr(b.cs_suggested_price)}
                   </td>
                   <td className="num">
-                    {inr(current)}{" "}
-                    {stale && <span className="badge amber">out of date</span>}
+                    {saleable ? (
+                      <>
+                        {inr(current)}{" "}
+                        {stale && <span className="badge amber">out of date</span>}
+                      </>
+                    ) : (
+                      <span className="badge blue">internal — feeds parent sheet</span>
+                    )}
                   </td>
                   <td>
                     <Link

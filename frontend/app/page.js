@@ -6,7 +6,7 @@ import { searchRead, inr } from "@/lib/odoo";
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  const [orders, mos, pos, lowStock] = await Promise.all([
+  const [orders, mos, pos, components, orderpoints] = await Promise.all([
     searchRead(
       "sale.order",
       [],
@@ -27,15 +27,22 @@ export default async function Dashboard() {
     ),
     searchRead(
       "product.product",
-      [["detailed_type", "=", "product"], ["qty_available", "<=", 0], ["purchase_ok", "=", true]],
-      ["name", "qty_available"],
-      { limit: 200 }
+      [["detailed_type", "=", "product"], ["bom_ids", "=", false]],
+      ["virtual_available"]
     ),
+    searchRead("stock.warehouse.orderpoint", [], ["product_id", "product_min_qty"]),
   ]);
 
   const openOrders = orders.filter((o) => ["sale", "done"].includes(o.state));
   const pipeline = orders.filter((o) => ["draft", "sent"].includes(o.state));
   const orderValue = openOrders.reduce((s, o) => s + o.amount_total, 0);
+
+  // Same rule as the Inventory health column: a bought-in component is due
+  // for reorder when its forecast falls below its min/max reorder minimum.
+  const minOf = Object.fromEntries(orderpoints.map((o) => [o.product_id[0], o.product_min_qty]));
+  const lowStock = components.filter(
+    (p) => minOf[p.id] !== undefined && p.virtual_available < minOf[p.id]
+  );
 
   return (
     <Shell title="Dashboard" crumb="Factory overview — live from the floor">
@@ -63,7 +70,7 @@ export default async function Dashboard() {
         <div className="card kpi accent">
           <div className="kpi-label">Items to Replenish</div>
           <div className="kpi-value">{lowStock.length}</div>
-          <div className="kpi-hint">components at or below zero</div>
+          <div className="kpi-hint">components below reorder minimum</div>
         </div>
       </div>
 

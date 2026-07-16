@@ -44,7 +44,7 @@ export default async function CostSheetDetail({ params }) {
   const lines = await bomLines(bomId);
   const [tmpl] = await callKw("product.template", "read", [
     [bom.product_tmpl_id[0]],
-    ["list_price"],
+    ["list_price", "sale_ok"],
   ]);
 
   const update = updateCostSheet.bind(null, bomId);
@@ -120,14 +120,23 @@ export default async function CostSheetDetail({ params }) {
               <span>Suggested sale price</span>
               <span className="mono">{inr(bom.cs_suggested_price)}</span>
             </div>
-            <div style={{ marginTop: 14, color: "var(--muted)", fontSize: 13 }}>
-              Current sale price on quotes: <b>{inr(tmpl.list_price)}</b>
-            </div>
-            <form action={apply} style={{ marginTop: 14 }}>
-              <button className="btn" style={{ width: "100%", justifyContent: "center" }}>
-                Apply {inr(bom.cs_suggested_price)} to quotations
-              </button>
-            </form>
+            {tmpl.sale_ok ? (
+              <>
+                <div style={{ marginTop: 14, color: "var(--muted)", fontSize: 13 }}>
+                  Current sale price on quotes: <b>{inr(tmpl.list_price)}</b>
+                </div>
+                <form action={apply} style={{ marginTop: 14 }}>
+                  <button className="btn" style={{ width: "100%", justifyContent: "center" }}>
+                    Apply {inr(bom.cs_suggested_price)} to quotations
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div style={{ marginTop: 14, color: "var(--muted)", fontSize: 13 }}>
+                <span className="badge blue">semi-finished</span> This item isn&rsquo;t sold
+                on its own — its cost feeds the parent product&rsquo;s sheet automatically.
+              </div>
+            )}
           </div>
 
           <div className="card">

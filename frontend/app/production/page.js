@@ -90,21 +90,25 @@ export default async function Production({ searchParams }) {
                     <StatusBadge state={m.state} />
                   </td>
                   <td>
-                    {open && (
-                      <form action={done}>
-                        <button
-                          className="btn ghost"
-                          style={{ padding: "5px 10px" }}
-                          title={
-                            m.qa_gates_passed
-                              ? "Close this job"
-                              : "Will be blocked until QA gates pass"
-                          }
+                    {open &&
+                      (m.qa_gates_passed ? (
+                        <form action={done}>
+                          <button
+                            className="btn ghost"
+                            style={{ padding: "5px 10px" }}
+                            title="Close this job"
+                          >
+                            Mark done
+                          </button>
+                        </form>
+                      ) : (
+                        <span
+                          style={{ fontSize: 12.5, color: "var(--muted)" }}
+                          title="The In-Process and Finished-Goods checks must pass first"
                         >
-                          Mark done
-                        </button>
-                      </form>
-                    )}
+                          pass QA to close
+                        </span>
+                      ))}
                   </td>
                 </tr>
               );

@@ -57,20 +57,19 @@ export default async function Quality() {
                   <td>
                     <span className="badge blue">{CP_LABEL[c.checkpoint]}</span>
                   </td>
+                  {/* One form, two submit actions — the note goes with either result */}
                   <td>
-                    <form action={pass} id={`pass-${c.id}`} />
-                    <form action={fail} id={`fail-${c.id}`} />
-                    <input name="note" placeholder="optional note" form={`pass-${c.id}`} />
+                    <input name="note" placeholder="optional note" form={`qc-${c.id}`} />
                   </td>
                   <td>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button className="btn" form={`pass-${c.id}`} style={{ background: "var(--ok)" }}>
+                    <form id={`qc-${c.id}`} style={{ display: "flex", gap: 8 }}>
+                      <button className="btn" formAction={pass} style={{ background: "var(--ok)" }}>
                         Pass
                       </button>
-                      <button className="btn" form={`fail-${c.id}`} style={{ background: "var(--bad)" }}>
+                      <button className="btn" formAction={fail} style={{ background: "var(--bad)" }}>
                         Fail
                       </button>
-                    </div>
+                    </form>
                   </td>
                 </tr>
               );

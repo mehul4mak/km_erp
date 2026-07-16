@@ -20,17 +20,28 @@ export default async function GoodsReceipt({ searchParams }) {
     ["name", "partner_id", "origin", "state", "scheduled_date", "move_ids", "inward_qc_passed"],
     { order: "id desc" }
   );
-  const moIds = receipts.map((r) => r.id);
-  const checks = moIds.length
-    ? await searchRead("mfg.incoming.check", [["picking_id", "in", moIds]], ["picking_id", "state"])
+  const pickIds = receipts.map((r) => r.id);
+  const checks = pickIds.length
+    ? await searchRead("mfg.incoming.check", [["picking_id", "in", pickIds]], ["picking_id", "state"])
     : [];
-  const checkOf = Object.fromEntries(checks.map((c) => [c.picking_id[0], c.state]));
+  // A receipt can carry several checks (a rejection re-opens a fresh pending
+  // one), so aggregate per picking instead of keeping only the last row.
+  const checksOf = {};
+  for (const c of checks) (checksOf[c.picking_id[0]] = checksOf[c.picking_id[0]] || []).push(c.state);
+
+  const qcStatus = (r) => {
+    const states = checksOf[r.id] || [];
+    if (r.state === "done" || states.includes("pass")) return "accepted";
+    if (states.includes("pending"))
+      return states.includes("fail") ? "reinspect" : "awaiting";
+    return states.includes("fail") ? "held" : "awaiting";
+  };
 
   const inwardBadge = (r) => {
-    const st = checkOf[r.id];
-    if (r.state === "done") return <span className="badge green">accepted</span>;
-    if (st === "pass") return <span className="badge green">accepted</span>;
-    if (st === "fail") return <span className="badge red">rejected — held</span>;
+    const st = qcStatus(r);
+    if (st === "accepted") return <span className="badge green">accepted</span>;
+    if (st === "reinspect") return <span className="badge red">rejected — re-inspection due</span>;
+    if (st === "held") return <span className="badge red">rejected — held</span>;
     return <span className="badge amber">awaiting inspection</span>;
   };
 
@@ -76,9 +87,8 @@ export default async function GoodsReceipt({ searchParams }) {
               </tr>
             )}
             {receipts.map((r) => {
-              const st = checkOf[r.id];
+              const st = qcStatus(r);
               const done = r.state === "done";
-              const decided = st === "pass" || st === "fail";
               const pass = recordInwardResult.bind(null, r.id, "pass");
               const fail = recordInwardResult.bind(null, r.id, "fail");
               const receive = receiveToStore.bind(null, r.id);
@@ -92,29 +102,27 @@ export default async function GoodsReceipt({ searchParams }) {
                   <td>{inwardBadge(r)}</td>
                   <td><span className={`badge ${color}`}>{label}</span></td>
                   <td>
-                    {!done && !decided && (
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <form action={pass}>
-                          <button className="btn" style={{ padding: "5px 12px", background: "var(--ok)" }}>
-                            Accept lot
-                          </button>
-                        </form>
-                        <form action={fail}>
-                          <button className="btn" style={{ padding: "5px 12px", background: "var(--bad)" }}>
-                            Reject
-                          </button>
-                        </form>
-                      </div>
+                    {!done && (st === "awaiting" || st === "reinspect") && (
+                      <form style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <input
+                          name="note"
+                          placeholder="inspector note"
+                          style={{ width: 150, padding: "5px 9px" }}
+                        />
+                        <button formAction={pass} className="btn" style={{ padding: "5px 12px", background: "var(--ok)" }}>
+                          Accept lot
+                        </button>
+                        <button formAction={fail} className="btn" style={{ padding: "5px 12px", background: "var(--bad)" }}>
+                          Reject
+                        </button>
+                      </form>
                     )}
-                    {!done && st === "pass" && (
+                    {!done && st === "accepted" && r.inward_qc_passed && (
                       <form action={receive}>
                         <button className="btn" style={{ padding: "5px 12px" }}>
                           Receive to store →
                         </button>
                       </form>
-                    )}
-                    {!done && st === "fail" && (
-                      <span style={{ fontSize: 12.5, color: "var(--bad)" }}>held — not stocked</span>
                     )}
                     {done && <span style={{ fontSize: 12.5, color: "var(--ok)" }}>in store ✓</span>}
                   </td>
