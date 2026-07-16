@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/orders", label: "Orders & Quotes", ico: "▤" },
   { section: "Make" },
   { href: "/production", label: "Production", ico: "⚙" },
+  { href: "/can-build", label: "Can I Build?", ico: "◎" },
   { href: "/requisitions", label: "Material Requisition", ico: "◱" },
   { href: "/quality", label: "Quality Gates", ico: "✓" },
   { section: "Stock" },
