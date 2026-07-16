@@ -1,0 +1,190 @@
+<title>KMForge — End-to-End Connected Flow</title>
+<style>
+  :root{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--copper-wash:#f2e5d4;--steel:#3f5d6b;--steel-wash:#e5edf0;--verified:#2e7a50;--verified-wash:#e4efe6;--amber:#a9722a;--gold:#8f6a3a;--gold-wash:#efe4d2;--red:#b0402c;
+    --shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);
+    --font-display:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;--font-sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--copper-wash:#2a2013;--steel:#82a0ad;--steel-wash:#16222a;--verified:#59ac7c;--verified-wash:#17251b;--amber:#d09a4f;--gold:#c39a5f;--gold-wash:#241c10;--red:#d3775f;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}}
+  :root[data-theme="light"]{--paper:#f4f0e8;--surface:#fffdf8;--surface-2:#f8f4eb;--ink:#201c15;--ink-soft:#574f43;--ink-faint:#8a8072;--line:#e2dac9;--line-strong:#cec3ae;--copper:#b0642c;--copper-deep:#8f4e1c;--steel:#3f5d6b;--verified:#2e7a50;--gold:#8f6a3a;--red:#b0402c;--shadow:0 1px 2px rgba(32,28,21,.05),0 14px 34px -20px rgba(32,28,21,.30);}
+  :root[data-theme="dark"]{--paper:#15120d;--surface:#1d1912;--surface-2:#221d15;--ink:#efe9dc;--ink-soft:#b1a795;--ink-faint:#7c7565;--line:#322b20;--line-strong:#463d2d;--copper:#d38a4f;--copper-deep:#c1783c;--steel:#82a0ad;--verified:#59ac7c;--gold:#c39a5f;--red:#d3775f;--shadow:0 1px 2px rgba(0,0,0,.4),0 16px 36px -20px rgba(0,0,0,.75);}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);line-height:1.62;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
+  .topband{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20;}
+  .topband .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 24px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:16px;}
+  .brand .mark b{color:var(--copper);}
+  .brand .sub{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .themebtn{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:6px 12px;cursor:pointer;}
+  .themebtn:hover{border-color:var(--copper);color:var(--copper);}
+
+  .hero{padding:52px 0 20px;}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--copper);font-weight:600;display:flex;align-items:center;gap:12px;}
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line-strong);max-width:120px;}
+  h1{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:16px 0 0;text-wrap:balance;max-width:20ch;}
+  .lede{font-size:1.14rem;color:var(--ink-soft);margin:18px 0 0;max-width:66ch;}
+
+  section{padding:30px 0;border-top:1px solid var(--line);}
+  .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper);font-weight:600;margin:0 0 6px;}
+  h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;font-size:clamp(1.4rem,3.2vw,1.9rem);margin:0 0 12px;text-wrap:balance;}
+  p{color:var(--ink-soft);max-width:70ch;margin:0 0 14px;}
+  .ink{color:var(--ink);font-weight:600;}
+
+  .diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:22px 12px;margin:8px 0 10px;overflow-x:auto;}
+  .diagram pre.mermaid{background:transparent;margin:0;display:flex;justify-content:center;min-width:640px;}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:14px;height:14px;border-radius:4px;display:inline-block;}
+  .lg-sell{background:#d7e2e8;border:1px solid #3f5d6b;}
+  .lg-make{background:#f0dcc4;border:1px solid #b0642c;}
+  .lg-buy{background:#e7dcc9;border:1px solid #8f6a3a;}
+  .lg-ship{background:#dcece1;border:1px solid #2e7a50;}
+  .lg-dec{background:#f6f2ea;border:1px solid #8a8072;}
+
+  .note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--copper);border-radius:5px;padding:14px 18px;margin:14px 0;}
+  .note .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--copper-deep);font-weight:700;display:block;margin-bottom:5px;}
+  .note p{margin:0 0 8px;}.note p:last-child{margin:0;}
+
+  .lanes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:6px 0;}
+  @media(max-width:760px){.lanes{grid-template-columns:1fr;}}
+  .lane{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:16px 18px;border-top:3px solid var(--line-strong);}
+  .lane.sell{border-top-color:var(--steel);}.lane.make{border-top-color:var(--copper);}.lane.buy{border-top-color:var(--gold);}
+  .lane h3{margin:0 0 8px;font-family:var(--font-display);font-size:1.02rem;}
+  .lane .scr{font-size:.86rem;color:var(--ink-soft);margin-bottom:8px;}
+  .lane .doc{font-family:var(--font-mono);font-size:11px;color:var(--copper-deep);}
+
+  ol.path{counter-reset:p;list-style:none;margin:6px 0;padding:0;display:grid;gap:10px;}
+  ol.path li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;}
+  ol.path li::before{counter-increment:p;content:counter(p);font-family:var(--font-mono);font-weight:700;color:#fff;background:var(--copper);width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:12.5px;}
+  ol.path li span{font-size:.95rem;color:var(--ink-soft);padding-top:2px;}
+  ol.path b{color:var(--ink);}
+
+  footer{border-top:1px solid var(--line);padding:24px 0 46px;}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+</style>
+
+<div class="topband"><div class="wrap">
+  <div class="brand"><span class="mark">KM<b>Forge</b></span><span class="sub">System Flow</span></div>
+  <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">Theme</button>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Everything, connected</div>
+  <h1>One order, from costing to dispatch.</h1>
+  <p class="lede">Quotation, purchasing, goods receipt, inward quality, requisition, QA — not separate
+    screens but a single connected flow. The two loops are what make it a system: buy → receive →
+    inspect → stock feeds the waiting job, and a failed QA gate re-opens for rework.</p>
+</div></header>
+
+<main>
+  <section><div class="wrap">
+    <p class="kicker">The whole picture</p>
+    <h2>End-to-end flow</h2>
+    <div class="diagram">
+<pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-monospace, monospace','fontSize':'13px','lineColor':'#8a8072','primaryColor':'#f6f2ea','primaryBorderColor':'#8a8072','primaryTextColor':'#201c15'}}}%%
+flowchart TD
+  CS["Cost Sheet<br/>live BOM costing"]:::sell
+  Q["Quotation<br/>S00001 - draft"]:::sell
+  SENT["Sent to customer"]:::sell
+  SO["Order confirmed<br/>S00001 - sale"]:::sell
+  CS --> Q --> SENT --> SO
+
+  SO --> NET{"Finished good<br/>in free stock?"}:::dec
+  NET -->|"Enough on shelf"| DEL
+  NET -->|"Short by N"| MO
+
+  MO["Manufacturing Order<br/>WH/MO/00001 - mixer"]:::make
+  SUBMO["Sub-assembly MO<br/>WH/MO/00002 - motor"]:::make
+  MO -->|"BOM needs a motor"| SUBMO
+  MO --> CHK{"Components<br/>in store?"}:::dec
+  SUBMO --> CHK
+  CHK -->|"Yes"| REQ["Material Requisition<br/>reserve FIFO"]:::make
+  CHK -->|"No - shortfall"| PO
+  REQ --> BUILD["Build on the line"]:::make
+  BUILD --> QA{"QA Gates<br/>in-process + finished"}:::dec
+  QA -->|"Fail - rework"| QA
+  QA -->|"Pass both"| FG["Finished goods<br/>into store"]:::make
+  FG --> DEL["Delivery to customer<br/>WH/OUT/00001"]:::ship
+
+  PO["Purchase Order / RFQ<br/>P00001 - vendor"]:::buy
+  POC["PO confirmed"]:::buy
+  GRN["Goods Receipt GRN<br/>WH/IN/00001"]:::buy
+  IQC{"Inward Quality<br/>Inspection"}:::dec
+  STORE["Received to store<br/>FIFO stock"]:::buy
+  HELD["Held - return to vendor"]:::stop
+  PO --> POC --> GRN --> IQC
+  IQC -->|"Reject"| HELD
+  IQC -->|"Accept lot"| STORE
+  STORE -->|"now available"| CHK
+
+  classDef sell fill:#d7e2e8,stroke:#3f5d6b,color:#152730;
+  classDef make fill:#f0dcc4,stroke:#b0642c,color:#3a1e0c;
+  classDef buy fill:#e7dcc9,stroke:#8f6a3a,color:#33260f;
+  classDef ship fill:#dcece1,stroke:#2e7a50,color:#173a25;
+  classDef dec fill:#f6f2ea,stroke:#8a8072,color:#201c15;
+  classDef stop fill:#f4e2dd,stroke:#b0402c,color:#3a140c;
+</pre>
+    </div>
+    <div class="legend">
+      <span><i class="lg-sell"></i> Sales</span>
+      <span><i class="lg-make"></i> Production</span>
+      <span><i class="lg-buy"></i> Procurement / inbound</span>
+      <span><i class="lg-ship"></i> Dispatch</span>
+      <span><i class="lg-dec"></i> Decision</span>
+    </div>
+    <div class="note"><span class="tag">The two loops that connect it</span>
+      <p><b>Buy → store → make:</b> when a job needs a part that isn't in the store, that shortfall
+        raises a PO → the goods arrive (GRN) → pass inward QC → land in stock → and the waiting job can
+        finally reserve them. That arrow back from the store to the component check is the whole point.</p>
+      <p><b>Rework:</b> a failed QA gate re-opens itself, so a batch is re-inspected before it can ever close.</p>
+    </div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Who does what</p>
+    <h2>The three lanes</h2>
+    <div class="lanes">
+      <div class="lane sell"><h3>Sales</h3>
+        <div class="scr">Cost Sheets · Orders &amp; Quotes</div>
+        <div class="doc">S#####</div>
+      </div>
+      <div class="lane make"><h3>Production</h3>
+        <div class="scr">Production · Material Requisition · Quality Gates · Can I Build?</div>
+        <div class="doc">WH/MO/##### · WH/OUT/#####</div>
+      </div>
+      <div class="lane buy"><h3>Procurement / Inbound</h3>
+        <div class="scr">Purchasing · Goods Receipt</div>
+        <div class="doc">P##### · WH/IN/#####</div>
+      </div>
+    </div>
+  </div></section>
+
+  <section><div class="wrap">
+    <p class="kicker">Step by step</p>
+    <h2>The happy path in eight moves</h2>
+    <ol class="path">
+      <li><span>Price the product on its <b>Cost Sheet</b>; that price flows into a <b>Quotation</b>.</span></li>
+      <li><span>Confirm the quote → <b>Sales Order</b>. The system checks stock (net requirements).</span></li>
+      <li><span>If short, a <b>Manufacturing Order</b> is raised — plus a nested <b>sub-assembly MO</b> for the motor.</span></li>
+      <li><span>Components in store are <b>reserved (FIFO)</b>; anything short triggers a <b>Purchase Order</b>.</span></li>
+      <li><span>The PO is confirmed → a <b>Goods Receipt (GRN)</b> appears → <b>Inward Quality</b> accepts or rejects the lot.</span></li>
+      <li><span>Accepted goods land in the <b>store (FIFO)</b> and become available to the waiting job.</span></li>
+      <li><span>The job builds and must pass the mandatory <b>QA Gates</b> before it can close.</span></li>
+      <li><span>Finished goods move to stock and are <b>delivered</b> to the customer.</span></li>
+    </ol>
+    <div class="note"><span class="tag">Source</span>
+      <p>This diagram lives in the repo at <b>docs/system-flow.md</b> (mermaid — renders on GitHub) and
+        <b>docs/system-flow.html</b> (this page). Net-requirements step 2 is the make-to-stock plan, still
+        pending your go-ahead.</p></div>
+  </div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>KMForge — Manufacturing Cloud · by KMatrix AI</span>
+  <span>End-to-end connected flow</span>
+</div></footer>
+
+<script>
+  (function(){var b=document.getElementById("themebtn");b.addEventListener("click",function(){var r=document.documentElement,c=r.getAttribute("data-theme");if(!c)c=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";r.setAttribute("data-theme",c==="dark"?"light":"dark");});})();
+</script>
