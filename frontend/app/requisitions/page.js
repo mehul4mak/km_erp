@@ -68,49 +68,71 @@ export default async function Requisitions() {
       {mos.map((m) => {
         const rows = rawsOf[m.id] || [];
         const reserve = reserveForJob.bind(null, m.id);
+        const reserved = rows.filter((r) => r.state === "assigned").length;
         return (
-          <div className="card" key={m.id} style={{ marginBottom: 16 }}>
-            <h2>
+          <details key={m.id} className="card" style={{ marginBottom: 12 }}>
+            <summary
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: 12, cursor: "pointer", listStyle: "none", flexWrap: "wrap",
+              }}
+            >
               <span>
                 <span className="mono" style={{ fontWeight: 700 }}>{m.name}</span>{" "}
                 — {m.product_id?.[1]} × {m.product_qty}
+                <span style={{ color: "var(--muted)", fontSize: 12.5, marginLeft: 8 }}>
+                  ({reserved}/{rows.length} components reserved · click to expand)
+                </span>
               </span>
-              <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                {resBadge(m.reservation_state)}
-                {m.reservation_state !== "assigned" && (
-                  <form action={reserve}>
-                    <button className="btn" style={{ padding: "6px 14px" }}>
-                      Reserve materials
-                    </button>
-                  </form>
+              {resBadge(m.reservation_state)}
+            </summary>
+
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+                {m.reservation_state !== "assigned" ? (
+                  <>
+                    <form action={reserve}>
+                      <button className="btn" style={{ padding: "6px 14px" }}>
+                        Reserve materials from store
+                      </button>
+                    </form>
+                    <span style={{ color: "var(--muted)", fontSize: 12.5 }}>
+                      Earmarks these components (FIFO) so they&rsquo;re held for this job only —
+                      nothing else can consume them.
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ color: "var(--ok)", fontSize: 13, fontWeight: 600 }}>
+                    ✓ All components reserved and set aside for this job.
+                  </span>
                 )}
-              </span>
-            </h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Component</th>
-                  <th className="num">Required</th>
-                  <th>Reservation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 && (
-                  <tr><td colSpan={3} className="empty">No components.</td></tr>
-                )}
-                {rows.map((r) => {
-                  const [label, color] = MOVE_STATE[r.state] || [r.state, "gray"];
-                  return (
-                    <tr key={r.id}>
-                      <td>{r.product_id?.[1]}</td>
-                      <td className="num">{r.product_uom_qty}</td>
-                      <td><span className={`badge ${color}`}>{label}</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th className="num">Required</th>
+                    <th>Reservation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 && (
+                    <tr><td colSpan={3} className="empty">No components.</td></tr>
+                  )}
+                  {rows.map((r) => {
+                    const [label, color] = MOVE_STATE[r.state] || [r.state, "gray"];
+                    return (
+                      <tr key={r.id}>
+                        <td>{r.product_id?.[1]}</td>
+                        <td className="num">{r.product_uom_qty}</td>
+                        <td><span className={`badge ${color}`}>{label}</span></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </details>
         );
       })}
     </Shell>

@@ -99,7 +99,7 @@ export default async function Inventory() {
   return (
     <Shell
       title="Inventory"
-      crumb="On-hand, reserved and forecast — with automatic min/max reorder rules"
+      crumb="How much of each item you have right now — on-hand, reserved, incoming and forecast, with reorder alerts"
     >
       <Section
         title={`Finished Goods (${finished.length})`}

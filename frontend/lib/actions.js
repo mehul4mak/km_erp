@@ -26,25 +26,29 @@ export async function applyPrice(bomId) {
 
 export async function createQuotation(formData) {
   const partnerId = parseInt(formData.get("partner_id"), 10);
-  const productId = parseInt(formData.get("product_id"), 10);
-  const qty = parseFloat(formData.get("qty")) || 1;
   const ref = formData.get("client_ref") || false;
-  const confirm = formData.get("confirm") === "on";
+  // Multiple line items: parallel product / qty arrays from the line editor.
+  const products = formData.getAll("line_product");
+  const qtys = formData.getAll("line_qty");
+  const lines = [];
+  for (let i = 0; i < products.length; i++) {
+    const pid = parseInt(products[i], 10);
+    const q = parseFloat(qtys[i]) || 0;
+    if (pid && q > 0) lines.push([0, 0, { product_id: pid, product_uom_qty: q }]);
+  }
+  if (lines.length === 0) redirect("/orders/new?error=empty");
 
   const soId = await callKw("sale.order", "create", [
-    {
-      partner_id: partnerId,
-      client_order_ref: ref,
-      order_line: [[0, 0, { product_id: productId, product_uom_qty: qty }]],
-    },
+    { partner_id: partnerId, client_order_ref: ref, order_line: lines },
   ]);
-  if (confirm) {
-    await callKw("sale.order", "action_confirm", [[soId]]);
-  }
   revalidatePath("/orders");
-  revalidatePath("/production");
-  revalidatePath("/purchasing");
   redirect(`/orders/${soId}`);
+}
+
+export async function sendQuotation(soId) {
+  await callKw("sale.order", "write", [[soId], { state: "sent" }]);
+  revalidatePath(`/orders/${soId}`);
+  revalidatePath("/orders");
 }
 
 export async function confirmOrder(soId) {
@@ -53,6 +57,7 @@ export async function confirmOrder(soId) {
   revalidatePath("/orders");
   revalidatePath("/production");
   revalidatePath("/purchasing");
+  revalidatePath("/requisitions");
 }
 
 export async function setQualityResult(checkId, result, formData) {
@@ -79,33 +84,28 @@ export async function confirmPurchase(poId) {
   revalidatePath("/goods-receipt");
 }
 
-// ---- Contacts (customers & vendors) ----
-export async function createCustomer(formData) {
+// ---- Contacts (one form, a type selector decides customer vs vendor) ----
+export async function createContact(formData) {
+  const type = formData.get("type"); // "customer" | "vendor" | "both"
   await callKw("res.partner", "create", [
     {
       name: formData.get("name"),
       email: formData.get("email") || false,
       phone: formData.get("phone") || false,
       city: formData.get("city") || false,
-      customer_rank: 1,
+      customer_rank: type === "vendor" ? 0 : 1,
+      supplier_rank: type === "customer" ? 0 : 1,
     },
   ]);
   revalidatePath("/customers");
   redirect("/customers");
 }
 
-export async function createVendor(formData) {
-  await callKw("res.partner", "create", [
-    {
-      name: formData.get("name"),
-      email: formData.get("email") || false,
-      phone: formData.get("phone") || false,
-      city: formData.get("city") || false,
-      supplier_rank: 1,
-    },
-  ]);
-  revalidatePath("/customers");
-  redirect("/customers");
+// ---- Cost sheet: freeze the current sheet as a version ----
+export async function saveCostSheetVersion(bomId, formData) {
+  const note = formData?.get?.("note") || false;
+  await callKw("mrp.bom", "action_cs_save_version", [[bomId], note]);
+  revalidatePath(`/costsheets/${bomId}`);
 }
 
 // ---- Goods receipt: inward quality inspection + post to store ----

@@ -76,7 +76,7 @@ export default async function Movements() {
   return (
     <Shell
       title="Material Movements"
-      crumb="Every physical handoff is a recorded transaction — no more silent stock drains"
+      crumb="The audit log of physical stock moving — vendor deliveries in, and materials issued to production"
     >
       <div className="card" style={{ marginBottom: 16 }}>
         <h2>Store → Production Handoffs ({handoffs.length})</h2>

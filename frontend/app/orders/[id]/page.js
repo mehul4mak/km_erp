@@ -2,7 +2,7 @@ import Link from "next/link";
 import Shell from "@/components/Shell";
 import StatusBadge from "@/components/StatusBadge";
 import { callKw, searchRead, inr } from "@/lib/odoo";
-import { confirmOrder } from "@/lib/actions";
+import { confirmOrder, sendQuotation } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +58,7 @@ export default async function OrderDetail({ params }) {
   );
 
   const confirm = confirmOrder.bind(null, soId);
+  const send = sendQuotation.bind(null, soId);
   const confirmed = ["sale", "done"].includes(so.state);
 
   return (
@@ -66,13 +67,24 @@ export default async function OrderDetail({ params }) {
         <Link href="/orders" className="btn secondary">
           ← All orders
         </Link>
+        {so.state === "draft" && (
+          <form action={send}>
+            <button className="btn secondary">Mark as sent to customer</button>
+          </form>
+        )}
         {!confirmed && so.state !== "cancel" && (
           <form action={confirm}>
-            <button className="btn">Confirm order — start production</button>
+            <button className="btn">Confirm order — start production →</button>
           </form>
         )}
         <StatusBadge state={so.state} />
       </div>
+      {!confirmed && so.state !== "cancel" && (
+        <div style={{ color: "var(--muted)", fontSize: 13, marginBottom: 16 }}>
+          Next step: <b style={{ color: "var(--ink)" }}>Confirm order</b> — this books the sale and
+          automatically plans the production jobs and any material purchases below.
+        </div>
+      )}
 
       <div className="flow-steps">
         <span className={`flow-step ${so.state !== "cancel" ? "done" : ""}`}>1 · Quotation</span>
@@ -169,8 +181,8 @@ export default async function OrderDetail({ params }) {
                 <tr>
                   <td colSpan={5} className="empty">
                     {confirmed
-                      ? "No purchases raised for this order."
-                      : "Component RFQs are raised automatically on confirmation."}
+                      ? "No purchase needed — the required components were already in store."
+                      : "Component RFQs are raised automatically on confirmation, only for parts not in stock."}
                   </td>
                 </tr>
               )}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Shell from "@/components/Shell";
 import { callKw, searchRead, inr } from "@/lib/odoo";
-import { updateCostSheet, applyPrice } from "@/lib/actions";
+import { updateCostSheet, applyPrice, saveCostSheetVersion } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +46,16 @@ export default async function CostSheetDetail({ params }) {
     [bom.product_tmpl_id[0]],
     ["list_price", "sale_ok"],
   ]);
+  const versions = await searchRead(
+    "mfg.cost.sheet.version",
+    [["bom_id", "=", bomId]],
+    ["name", "material_cost", "subtotal", "rejection_pct", "profit_pct", "suggested_price", "note", "saved_by", "create_date"],
+    { order: "create_date desc" }
+  );
 
   const update = updateCostSheet.bind(null, bomId);
   const apply = applyPrice.bind(null, bomId);
+  const saveVersion = saveCostSheetVersion.bind(null, bomId);
 
   return (
     <Shell
@@ -139,7 +146,7 @@ export default async function CostSheetDetail({ params }) {
             )}
           </div>
 
-          <div className="card">
+          <div className="card" style={{ marginBottom: 16 }}>
             <h2>Adjust Percentages</h2>
             <form action={update}>
               <div className="field">
@@ -163,7 +170,61 @@ export default async function CostSheetDetail({ params }) {
               <button className="btn secondary">Recalculate</button>
             </form>
           </div>
+
+          <div className="card">
+            <h2>Save a Version</h2>
+            <div style={{ color: "var(--muted)", fontSize: 12.5, marginBottom: 10 }}>
+              Freeze the current sheet before a rate or material change, so you keep a dated
+              record of what the cost was and why it moved.
+            </div>
+            <form action={saveVersion}>
+              <div className="field">
+                <label>Reason for change (optional)</label>
+                <input name="note" placeholder="e.g. copper rate up to ₹880/kg" />
+              </div>
+              <button className="btn secondary">Save current as version</button>
+            </form>
+          </div>
         </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 16 }}>
+        <h2>Version History ({versions.length})</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Saved</th>
+              <th className="num">Material</th>
+              <th className="num">Rejection %</th>
+              <th className="num">Profit %</th>
+              <th className="num">Price</th>
+              <th>Reason</th>
+              <th>By</th>
+            </tr>
+          </thead>
+          <tbody>
+            {versions.length === 0 && (
+              <tr>
+                <td colSpan={8} className="empty">
+                  No versions saved yet — save one to start tracking changes.
+                </td>
+              </tr>
+            )}
+            {versions.map((v) => (
+              <tr key={v.id}>
+                <td className="mono" style={{ fontWeight: 700 }}>{v.name}</td>
+                <td>{(v.create_date || "").slice(0, 16)}</td>
+                <td className="num">{inr(v.material_cost)}</td>
+                <td className="num">{v.rejection_pct}%</td>
+                <td className="num">{v.profit_pct}%</td>
+                <td className="num" style={{ fontWeight: 700 }}>{inr(v.suggested_price)}</td>
+                <td>{v.note || "—"}</td>
+                <td>{v.saved_by?.[1] || "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Shell>
   );

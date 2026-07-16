@@ -16,7 +16,7 @@ export default async function Purchasing() {
   return (
     <Shell
       title="Purchasing"
-      crumb="Component RFQs raised automatically from confirmed orders"
+      crumb="Ordering components from vendors — confirm the RFQs raised automatically when stock is short"
     >
       <div className="card">
         <table>

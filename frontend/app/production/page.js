@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Shell from "@/components/Shell";
 import StatusBadge from "@/components/StatusBadge";
 import { searchRead } from "@/lib/odoo";
@@ -80,7 +81,11 @@ export default async function Production({ searchParams }) {
                       m.qa_gates_passed ? (
                         <span className="badge green">passed</span>
                       ) : (
-                        <span className="badge amber">inspection due</span>
+                        <Link href="/quality" title="Go to Quality Gates to inspect this job">
+                          <span className="badge amber" style={{ cursor: "pointer" }}>
+                            inspection due →
+                          </span>
+                        </Link>
                       )
                     ) : (
                       "—"

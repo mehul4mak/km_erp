@@ -12,7 +12,10 @@ Modeled on the client's existing Excel cost sheet (subtotal -> +2% rejection -> 
     "author": "Mehul",
     "category": "Manufacturing",
     "depends": ["mrp", "sale_management"],
-    "data": ["views/mrp_bom_views.xml"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/mrp_bom_views.xml",
+    ],
     "application": True,
     "installable": True,
     "license": "LGPL-3",
