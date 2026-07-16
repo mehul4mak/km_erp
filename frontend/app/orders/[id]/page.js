@@ -29,7 +29,7 @@ export default async function OrderDetail({ params }) {
     searchRead(
       "sale.order.line",
       [["order_id", "=", soId]],
-      ["product_id", "product_uom_qty", "price_unit", "price_subtotal"]
+      ["product_id", "product_uom_qty", "price_unit", "price_subtotal", "mts_from_stock", "mts_to_make"]
     ),
     searchRead(
       "mrp.production",
@@ -103,21 +103,39 @@ export default async function OrderDetail({ params }) {
             <tr>
               <th>Product</th>
               <th className="num">Qty</th>
+              <th>Fulfilment</th>
               <th className="num">Unit Price</th>
               <th className="num">Subtotal</th>
             </tr>
           </thead>
           <tbody>
-            {lines.map((l) => (
-              <tr key={l.id}>
-                <td>{l.product_id?.[1]}</td>
-                <td className="num">{l.product_uom_qty}</td>
-                <td className="num">{inr(l.price_unit)}</td>
-                <td className="num">{inr(l.price_subtotal)}</td>
-              </tr>
-            ))}
+            {lines.map((l) => {
+              const split = confirmed && (l.mts_from_stock > 0 || l.mts_to_make > 0);
+              return (
+                <tr key={l.id}>
+                  <td>{l.product_id?.[1]}</td>
+                  <td className="num">{l.product_uom_qty}</td>
+                  <td>
+                    {split ? (
+                      <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {l.mts_from_stock > 0 && (
+                          <span className="badge green">{l.mts_from_stock} from stock</span>
+                        )}
+                        {l.mts_to_make > 0 && (
+                          <span className="badge amber">{l.mts_to_make} to manufacture</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--muted)", fontSize: 12.5 }}>—</span>
+                    )}
+                  </td>
+                  <td className="num">{inr(l.price_unit)}</td>
+                  <td className="num">{inr(l.price_subtotal)}</td>
+                </tr>
+              );
+            })}
             <tr>
-              <td colSpan={3} style={{ fontWeight: 700, textAlign: "right" }}>
+              <td colSpan={4} style={{ fontWeight: 700, textAlign: "right" }}>
                 Total
               </td>
               <td className="num" style={{ fontWeight: 800 }}>
