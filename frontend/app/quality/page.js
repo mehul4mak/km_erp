@@ -11,12 +11,21 @@ const CP_LABEL = {
 };
 
 export default async function Quality() {
-  const checks = await searchRead(
-    "mfg.quality.check",
-    [],
-    ["production_id", "product_id", "checkpoint", "state", "due", "note", "checked_by", "checked_on", "create_date"],
-    { order: "id desc" }
-  );
+  const [checks, openNcr, lots] = await Promise.all([
+    searchRead(
+      "mfg.quality.check",
+      [],
+      ["production_id", "product_id", "checkpoint", "state", "due", "note", "checked_by", "checked_on", "create_date"],
+      { order: "id desc" }
+    ),
+    searchRead("mfg.ncr", [["state", "=", "open"]], ["id"]),
+    searchRead("mrp.production", [["km_lot", "!=", false]], ["id"]),
+  ]);
+
+  const passed = checks.filter((c) => c.state === "pass").length;
+  const failed = checks.filter((c) => c.state === "fail").length;
+  const actioned = passed + failed;
+  const passRate = actioned ? Math.round((passed / actioned) * 100) : 100;
 
   const jobLink = (pid) =>
     pid ? (
@@ -33,6 +42,29 @@ export default async function Quality() {
       title="Quality Gates"
       crumb="Mandatory checkpoints — a batch cannot be closed until both gates pass"
     >
+      <div className="kpi-grid">
+        <div className="card kpi accent">
+          <div className="kpi-label">QA Pass Rate</div>
+          <div className="kpi-value">{passRate}%</div>
+          <div className="kpi-hint">{passed} passed · {failed} failed</div>
+        </div>
+        <div className="card kpi">
+          <div className="kpi-label">Awaiting Inspection</div>
+          <div className="kpi-value">{pending.length}</div>
+          <div className="kpi-hint">checks due now</div>
+        </div>
+        <div className="card kpi">
+          <div className="kpi-label">Open NCRs</div>
+          <div className="kpi-value" style={{ color: openNcr.length ? "var(--bad)" : "var(--ink)" }}>{openNcr.length}</div>
+          <div className="kpi-hint">nonconformances to disposition</div>
+        </div>
+        <div className="card kpi">
+          <div className="kpi-label">Lots Produced</div>
+          <div className="kpi-value">{lots.length}</div>
+          <div className="kpi-hint">traceable finished batches</div>
+        </div>
+      </div>
+
       <div className="card" style={{ marginBottom: 16 }}>
         <h2>Awaiting Inspection ({pending.length})</h2>
         <table>
