@@ -35,11 +35,11 @@ export default function LoginPage({ searchParams }) {
         <form action={login}>
           <div className="field">
             <label>Email</label>
-            <input name="email" type="email" defaultValue="owner@kmforge.cloud" required />
+            <input name="email" type="email" defaultValue="vishal.m@slm.co" required />
           </div>
           <div className="field">
             <label>Password</label>
-            <input name="password" type="password" placeholder="demo1234" required />
+            <input name="password" type="password" placeholder="slm1234" required />
           </div>
           <button className="btn" style={{ width: "100%", justifyContent: "center" }}>
             Sign in

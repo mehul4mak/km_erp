@@ -26,6 +26,24 @@ export default async function CostSheets() {
   );
   const tmplOf = Object.fromEntries(tmpls.map((t) => [t.id, t]));
 
+  // A cost sheet is only trustworthy if every component carries a rate. Count
+  // components still priced at 0 per BOM so an incomplete sheet can't be
+  // mistaken for a final one (and its suggested price ignored for quoting).
+  const bomIds = boms.map((b) => b.id);
+  const allLines = bomIds.length
+    ? await searchRead("mrp.bom.line", [["bom_id", "in", bomIds]], ["bom_id", "product_id"])
+    : [];
+  const prodIds = [...new Set(allLines.map((l) => l.product_id[0]))];
+  const prods = prodIds.length
+    ? await searchRead("product.product", [["id", "in", prodIds]], ["standard_price"])
+    : [];
+  const costOf = Object.fromEntries(prods.map((p) => [p.id, p.standard_price]));
+  const pendingByBom = {};
+  for (const l of allLines) {
+    if ((costOf[l.product_id[0]] || 0) <= 0)
+      pendingByBom[l.bom_id[0]] = (pendingByBom[l.bom_id[0]] || 0) + 1;
+  }
+
   return (
     <Shell
       title="Cost Sheets"
@@ -50,7 +68,8 @@ export default async function CostSheets() {
               const tmpl = tmplOf[b.product_tmpl_id[0]] || {};
               const saleable = tmpl.sale_ok !== false;
               const current = tmpl.list_price || 0;
-              const stale = saleable && Math.abs(current - b.cs_suggested_price) > 0.5;
+              const pending = pendingByBom[b.id] || 0;
+              const stale = saleable && !pending && Math.abs(current - b.cs_suggested_price) > 0.5;
               return (
                 <tr key={b.id}>
                   <td style={{ fontWeight: 600 }}>{b.product_tmpl_id[1]}</td>
@@ -59,10 +78,18 @@ export default async function CostSheets() {
                   <td className="num">{b.rejection_pct}%</td>
                   <td className="num">{b.profit_pct}%</td>
                   <td className="num" style={{ fontWeight: 700 }}>
-                    {inr(b.cs_suggested_price)}
+                    {pending ? (
+                      <span style={{ color: "var(--muted)" }}>{inr(b.cs_suggested_price)}</span>
+                    ) : (
+                      inr(b.cs_suggested_price)
+                    )}
                   </td>
                   <td className="num">
-                    {saleable ? (
+                    {pending ? (
+                      <span className="badge amber">
+                        incomplete — {pending} part{pending > 1 ? "s" : ""} need rates
+                      </span>
+                    ) : saleable ? (
                       <>
                         {inr(current)}{" "}
                         {stale && <span className="badge amber">out of date</span>}

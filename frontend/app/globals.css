@@ -48,7 +48,7 @@ a { color: inherit; text-decoration: none; }
 .brand-name { font-weight: 700; font-size: 16px; letter-spacing: 0.2px; }
 .brand-sub { font-size: 10.5px; color: #7d93b2; letter-spacing: 1.4px; text-transform: uppercase; }
 
-.nav { padding: 8px 10px; flex: 1; }
+.nav { padding: 8px 10px; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .nav-section { font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #5c7599; padding: 14px 10px 6px; }
 .nav a {
   display: flex; align-items: center; gap: 10px;
@@ -59,7 +59,8 @@ a { color: inherit; text-decoration: none; }
 .nav a.active { background: var(--brand-2); color: #fff; }
 .nav .ico { width: 20px; text-align: center; opacity: 0.9; }
 
-.sidebar-foot { padding: 14px 18px; font-size: 11.5px; color: #5c7599; border-top: 1px solid rgba(255,255,255,0.07); }
+.sidebar-foot { flex-shrink: 0; padding: 14px 18px; font-size: 11.5px; color: #5c7599; border-top: 1px solid rgba(255,255,255,0.07); }
+.brand { flex-shrink: 0; }
 
 /* ---------- Main ---------- */
 .main { flex: 1; min-width: 0; }
@@ -70,9 +71,33 @@ a { color: inherit; text-decoration: none; }
 }
 .topbar h1 { font-size: 18px; font-weight: 700; }
 .topbar .crumb { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.user-menu { position: relative; }
 .user-chip {
   display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted);
+  background: none; border: 1px solid transparent; border-radius: 999px;
+  padding: 4px 6px 4px 12px; cursor: pointer; font-family: inherit;
+  transition: background 0.12s, border-color 0.12s;
 }
+.user-chip:hover { background: var(--surface-2, rgba(0,0,0,0.04)); border-color: var(--line); }
+.user-chip span { white-space: nowrap; }
+
+.user-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 20;
+  min-width: 220px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+}
+.user-dropdown-head { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.user-dropdown-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.user-dropdown-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.user-dropdown-org { font-size: 11.5px; color: var(--brand-2); margin-top: 8px; font-weight: 600; }
+.user-dropdown form { margin: 0; }
+.user-dropdown-item {
+  display: block; width: 100%; text-align: left; background: none; border: 0;
+  padding: 12px 16px; font-size: 13px; font-weight: 600; color: #dc2626;
+  cursor: pointer; font-family: inherit;
+}
+.user-dropdown-item:hover { background: rgba(220, 38, 38, 0.08); }
 .avatar {
   width: 32px; height: 32px; border-radius: 50%;
   background: linear-gradient(135deg, #f59e0b, #ef6c00);

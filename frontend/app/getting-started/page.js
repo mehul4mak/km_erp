@@ -157,7 +157,7 @@ export default function GettingStarted() {
       </div>
 
       <p style={{ color: "var(--muted)", fontSize: 12.5, marginTop: 18 }}>
-        Demo sign-in: <b>owner@kmforge.cloud</b> / <b>demo1234</b> · KMForge by KMatrix AI
+        Demo sign-in: <b>vishal.m@slm.co</b> / <b>slm1234</b> · SLM — Virar plant · KMForge by KMatrix AI
       </p>
     </Shell>
   );

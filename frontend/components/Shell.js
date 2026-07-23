@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import NavLinks from "./NavLinks";
+import UserMenu from "./UserMenu";
 
 export default function Shell({ title, crumb, children }) {
   const user = currentUser();
@@ -18,7 +19,7 @@ export default function Shell({ title, crumb, children }) {
         </Link>
         <NavLinks />
         <div className="sidebar-foot">
-          Plant: Delhi NCR Unit 1<br />v1.0 · KMForge · by KMatrix AI
+          {user.org || "SLM"} · {user.site || "Virar"} plant<br />v1.0 · KMForge · by KMatrix AI
         </div>
       </aside>
       <div className="main">
@@ -27,12 +28,7 @@ export default function Shell({ title, crumb, children }) {
             <h1>{title}</h1>
             {crumb && <div className="crumb">{crumb}</div>}
           </div>
-          <div className="user-chip">
-            <span>
-              {user.name} · {user.role}
-            </span>
-            <div className="avatar">{user.name?.[0] || "U"}</div>
-          </div>
+          <UserMenu user={user} />
         </div>
         <div className="content">{children}</div>
       </div>

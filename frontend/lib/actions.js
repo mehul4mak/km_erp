@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { callKw } from "./odoo";
+import { SESSION_COOKIE } from "./auth";
+
+export async function logout() {
+  cookies().delete(SESSION_COOKIE);
+  redirect("/login");
+}
 
 export async function updateCostSheet(bomId, formData) {
   const rejection = parseFloat(formData.get("rejection_pct"));
