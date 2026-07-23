@@ -7,6 +7,16 @@ CHECKPOINTS = [
     ("final", "Finished-Goods Check"),
 ]
 
+# The floor lifecycle layered over Odoo's own state, so a job's physical stage
+# is explicit and the QA gates can be tied to it.
+KM_STAGES = [
+    ("planned", "Planned"),
+    ("started", "Started"),
+    ("in_progress", "In Progress"),
+    ("finished", "Finished"),
+    ("done", "Done"),
+]
+
 
 class MfgQualityCheck(models.Model):
     _name = "mfg.quality.check"
@@ -32,10 +42,33 @@ class MfgQualityCheck(models.Model):
             rec.name = "%s / %s" % (
                 rec.production_id.name or "?", labels.get(rec.checkpoint, ""))
 
+    due = fields.Boolean(compute="_compute_due")
+
+    def _compute_due(self):
+        # A check is actionable only at the matching lifecycle stage.
+        for rec in self:
+            stage = rec.production_id.km_stage
+            rec.due = rec.state == "pending" and (
+                (rec.checkpoint == "in_process" and stage == "in_progress")
+                or (rec.checkpoint == "final" and stage == "finished")
+            )
+
     def action_set_result(self, result, note=False):
         """Record a pass/fail from the portal. Failing re-opens the gate as a
-        new pending check so the batch must be re-inspected after rework."""
+        new pending check so the batch must be re-inspected after rework.
+        A check can only be actioned at its matching stage: the In-Process
+        check while the job is In Progress, the Finished-Goods check when it
+        is Finished."""
         for rec in self:
+            stage = rec.production_id.km_stage
+            if rec.checkpoint == "in_process" and stage != "in_progress":
+                raise UserError(
+                    "The In-Process check applies while the job is In Progress — "
+                    "start production on %s first." % rec.production_id.name)
+            if rec.checkpoint == "final" and stage != "finished":
+                raise UserError(
+                    "The Finished-Goods check applies once the job is Finished — "
+                    "finish production on %s first." % rec.production_id.name)
             rec.write({
                 "state": result,
                 "note": note or rec.note,
@@ -53,6 +86,50 @@ class MrpProduction(models.Model):
 
     quality_check_ids = fields.One2many("mfg.quality.check", "production_id")
     qa_gates_passed = fields.Boolean(compute="_compute_qa_gates_passed")
+    km_stage = fields.Selection(
+        KM_STAGES, string="Floor Stage", default="planned", index=True, copy=False,
+        help="Physical progress of the job on the floor, from Planned to Done.")
+
+    def _checkpoint_passed(self, checkpoint):
+        """A checkpoint is cleared when it has no pending check and a recorded
+        pass (a failure re-opens a fresh pending one)."""
+        self.ensure_one()
+        cs = self.quality_check_ids.filtered(lambda c: c.checkpoint == checkpoint)
+        return bool(cs) and not any(c.state == "pending" for c in cs) and any(
+            c.state == "pass" for c in cs)
+
+    def action_km_start(self):
+        """Planned -> Started: reserve/issue the components and open the job."""
+        for mo in self:
+            if mo.km_stage != "planned":
+                raise UserError("%s has already been started." % mo.name)
+            try:
+                mo.action_assign()  # reserve components from stock
+            except Exception:
+                pass
+            mo.km_stage = "started"
+        return True
+
+    def action_km_progress(self):
+        """Started -> In Progress: production is now running; the In-Process
+        check becomes due."""
+        for mo in self:
+            if mo.km_stage != "started":
+                raise UserError("%s must be Started before it can go In Progress." % mo.name)
+            mo.km_stage = "in_progress"
+        return True
+
+    def action_km_finish(self):
+        """In Progress -> Finished: only once the In-Process check has passed;
+        the Finished-Goods check then becomes due before the job can close."""
+        for mo in self:
+            if mo.km_stage != "in_progress":
+                raise UserError("%s must be In Progress before it can be finished." % mo.name)
+            if not mo._checkpoint_passed("in_process"):
+                raise UserError(
+                    "The In-Process check must pass before you can finish %s." % mo.name)
+            mo.km_stage = "finished"
+        return True
 
     def _compute_qa_gates_passed(self):
         # A failed check spawns a fresh pending one, so the gate is open only
@@ -83,9 +160,14 @@ class MrpProduction(models.Model):
 
     def button_mark_done(self):
         for mo in self:
+            if mo.km_stage not in ("finished", "done"):
+                raise UserError(
+                    "%s must be Finished before it can be closed." % mo.name)
             if not mo.qa_gates_passed:
                 raise UserError(
                     "Quality gates are mandatory: %s cannot be closed until the "
                     "In-Process and Finished-Goods checks have both passed."
                     % mo.name)
-        return super().button_mark_done()
+        res = super().button_mark_done()
+        self.write({"km_stage": "done"})
+        return res

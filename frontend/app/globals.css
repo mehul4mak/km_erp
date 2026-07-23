@@ -243,6 +243,32 @@ label { font-size: 12.5px; font-weight: 600; color: var(--muted); display: block
 .linkcell { color: var(--brand-2); font-weight: 600; }
 .linkcell:hover { text-decoration: underline; }
 
+/* ---------- MO lifecycle stepper ---------- */
+.stepper { display: flex; align-items: center; flex-wrap: wrap; margin: 4px 0 6px; }
+.step {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
+  border-radius: 999px; font-size: 12.5px; font-weight: 700;
+  border: 1px solid var(--line); background: #fff; color: var(--muted); white-space: nowrap;
+}
+.step .dot { width: 16px; height: 16px; border-radius: 50%; background: #cfd8e6; display: grid; place-items: center; color: #fff; font-size: 10px; }
+.step.done { border-color: var(--ok); color: var(--ok); background: #e7f6ec; }
+.step.done .dot { background: var(--ok); }
+.step.now { border-color: var(--brand-2); color: #fff; background: var(--brand-2); box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3); }
+.step.now .dot { background: #fff; color: var(--brand-2); }
+.conn { width: 22px; height: 2px; background: var(--line); margin: 0 2px; }
+.conn.done { background: var(--ok); }
+
+/* QA gate row (interactive) */
+.qa-gate { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; margin-bottom: 9px; }
+.qa-gate.locked { opacity: 0.65; background: var(--surface-2); }
+.qa-gate.due { border-color: var(--warn); background: #fdf7ec; }
+.qa-gate.pass { border-color: var(--ok); background: #f2fbf5; }
+.qa-gate.fail { border-color: var(--bad); background: #fdf2f2; }
+.qa-gate .g-name { font-weight: 600; font-size: 13.5px; }
+.qa-gate .g-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.qa-actions { display: flex; gap: 6px; align-items: center; }
+.qa-actions input { width: 130px; padding: 5px 9px; }
+
 .empty { color: var(--muted); text-align: center; padding: 36px 0; font-size: 13.5px; }
 
 .flow-steps { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0 18px; }

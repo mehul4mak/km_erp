@@ -73,20 +73,41 @@ export async function confirmOrder(soId) {
   revalidatePath("/requisitions");
 }
 
-export async function setQualityResult(checkId, result, formData) {
+export async function setQualityResult(checkId, result, moId, formData) {
   const note = formData?.get?.("note") || false;
-  await callKw("mfg.quality.check", "action_set_result", [[checkId], result, note]);
+  try {
+    await callKw("mfg.quality.check", "action_set_result", [[checkId], result, note]);
+  } catch (e) {
+    const to = moId ? `/production/${moId}` : "/quality";
+    redirect(`${to}?blocked=${encodeURIComponent(e.message)}`);
+  }
   revalidatePath("/quality");
   revalidatePath("/production");
+  if (moId) revalidatePath(`/production/${moId}`);
 }
+
+// ---- MO lifecycle: Planned -> Started -> In Progress -> Finished -> Done ----
+async function moTransition(moId, method) {
+  try {
+    await callKw("mrp.production", method, [[moId]]);
+  } catch (e) {
+    redirect(`/production/${moId}?blocked=${encodeURIComponent(e.message)}`);
+  }
+  revalidatePath(`/production/${moId}`);
+  revalidatePath("/production");
+  revalidatePath("/requisitions");
+}
+export async function startJob(moId) { return moTransition(moId, "action_km_start"); }
+export async function progressJob(moId) { return moTransition(moId, "action_km_progress"); }
+export async function finishJob(moId) { return moTransition(moId, "action_km_finish"); }
 
 export async function markProductionDone(moId) {
   try {
     await callKw("mrp.production", "button_mark_done", [[moId]]);
   } catch (e) {
-    // QA gate rejection surfaces as a friendly redirect message
-    redirect(`/production?blocked=${encodeURIComponent(e.message)}`);
+    redirect(`/production/${moId}?blocked=${encodeURIComponent(e.message)}`);
   }
+  revalidatePath(`/production/${moId}`);
   revalidatePath("/production");
   revalidatePath("/inventory");
 }
