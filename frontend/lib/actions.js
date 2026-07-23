@@ -199,6 +199,73 @@ export async function saveComponentRates(bomId, formData) {
   revalidatePath("/costsheets");
 }
 
+// ---- Product master: create a product (bought part OR manufactured) ----
+export async function createProduct(formData) {
+  const mode = formData.get("mode"); // "bought" | "manufactured"
+  const name = (formData.get("name") || "").trim();
+  if (!name) redirect("/products/new?error=name");
+
+  if (mode === "bought") {
+    const cost = parseFloat(formData.get("cost")) || 0;
+    const vendorId = parseInt(formData.get("vendor_id"), 10);
+    const [buy] = await callKw("stock.route", "search_read", [[["name", "ilike", "buy"]], ["id"]], { limit: 1 });
+    const [mto] = await callKw("stock.route", "search_read", [
+      ["|", ["name", "ilike", "replenish on order"], ["name", "ilike", "make to order"]], ["id"],
+    ], { limit: 1 });
+    const routeIds = [buy?.id, mto?.id].filter(Boolean);
+    const tmplId = await callKw("product.template", "create", [{
+      name, type: "product", purchase_ok: true, sale_ok: false, standard_price: cost,
+      ...(routeIds.length ? { route_ids: [[6, 0, routeIds]] } : {}),
+    }]);
+    if (vendorId) {
+      await callKw("product.supplierinfo", "create", [
+        { partner_id: vendorId, product_tmpl_id: tmplId, price: cost, delay: 3, min_qty: 0 },
+      ]);
+    }
+    revalidatePath("/products");
+    redirect("/products");
+  }
+
+  // manufactured — a BOM makes the price; sellable => finished, else semi-finished
+  const sellable = formData.get("sellable") === "on";
+  const listPrice = parseFloat(formData.get("list_price")) || 0;
+  const rejection = parseFloat(formData.get("rejection_pct"));
+  const profit = parseFloat(formData.get("profit_pct"));
+  const labour = parseFloat(formData.get("labour")) || 0;
+  const products = formData.getAll("line_product");
+  const qtys = formData.getAll("line_qty");
+  const lines = [];
+  for (let i = 0; i < products.length; i++) {
+    const pid = parseInt(products[i], 10);
+    const q = parseFloat(qtys[i]) || 0;
+    if (pid && q > 0) lines.push([0, 0, { product_id: pid, product_qty: q }]);
+  }
+  if (lines.length === 0) redirect("/products/new?error=empty");
+
+  const [mfg] = await callKw("stock.route", "search_read", [[["name", "ilike", "manufacture"]], ["id"]], { limit: 1 });
+  const tmplId = await callKw("product.template", "create", [{
+    name, type: "product", sale_ok: sellable, purchase_ok: false, list_price: listPrice,
+    ...(mfg ? { route_ids: [[6, 0, [mfg.id]]] } : {}),
+  }]);
+  const bomVals = {
+    product_tmpl_id: tmplId, product_qty: 1, bom_line_ids: lines,
+    rejection_pct: isNaN(rejection) ? 2 : rejection, profit_pct: isNaN(profit) ? 7 : profit,
+  };
+  if (labour > 0) {
+    const [wc] = await callKw("mrp.workcenter", "search_read", [[], ["id", "costs_hour"]], { limit: 1 });
+    if (wc && wc.costs_hour > 0) {
+      bomVals.operation_ids = [[0, 0, {
+        name: "Assembly & Testing", workcenter_id: wc.id,
+        time_cycle_manual: (labour / wc.costs_hour) * 60,
+      }]];
+    }
+  }
+  const bomId = await callKw("mrp.bom", "create", [bomVals]);
+  revalidatePath("/products");
+  revalidatePath("/costsheets");
+  redirect(`/costsheets/${bomId}`);
+}
+
 // ---- Cost sheet: create a brand-new one (finished product + its BOM) ----
 export async function createCostSheet(formData) {
   const name = (formData.get("name") || "").trim();
