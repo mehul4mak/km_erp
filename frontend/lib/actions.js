@@ -343,6 +343,20 @@ export async function receiveToStore(pickingId) {
   revalidatePath("/requisitions");
 }
 
+// ---- Nonconformance (NCR): disposition + close ----
+export async function setNcrDisposition(ncrId, formData) {
+  const disposition = formData.get("disposition") || "pending";
+  const rootCause = formData.get("root_cause") || false;
+  const corrective = formData.get("corrective_action") || false;
+  await callKw("mfg.ncr", "action_set_disposition", [[ncrId], disposition, rootCause, corrective]);
+  revalidatePath("/nonconformance");
+}
+
+export async function closeNcr(ncrId) {
+  await callKw("mfg.ncr", "action_close", [[ncrId]]);
+  revalidatePath("/nonconformance");
+}
+
 // ---- Material requisition: reserve components for a manufacturing job (FIFO) ----
 export async function reserveForJob(moId) {
   await callKw("mrp.production", "action_assign", [[moId]]);

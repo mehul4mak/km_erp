@@ -78,6 +78,13 @@ class MfgQualityCheck(models.Model):
             if result == "fail":
                 rec.copy({"state": "pending", "note": False,
                           "checked_by": False, "checked_on": False})
+                # ISO 8.7: a failure raises a Nonconformance Report for disposition.
+                self.env["mfg.ncr"].create({
+                    "production_id": rec.production_id.id,
+                    "check_id": rec.id,
+                    "checkpoint": rec.checkpoint,
+                    "reason": note or "Quality gate failed",
+                })
         return True
 
 
@@ -89,6 +96,9 @@ class MrpProduction(models.Model):
     km_stage = fields.Selection(
         KM_STAGES, string="Floor Stage", default="planned", index=True, copy=False,
         help="Physical progress of the job on the floor, from Planned to Done.")
+    km_lot = fields.Char("Batch / Lot No.", copy=False, readonly=True,
+        help="Traceability lot assigned to the finished batch when the job closes.")
+    ncr_ids = fields.One2many("mfg.ncr", "production_id")
 
     def _checkpoint_passed(self, checkpoint):
         """A checkpoint is cleared when it has no pending check and a recorded
@@ -169,5 +179,11 @@ class MrpProduction(models.Model):
                     "In-Process and Finished-Goods checks have both passed."
                     % mo.name)
         res = super().button_mark_done()
-        self.write({"km_stage": "done"})
+        for mo in self:
+            vals = {"km_stage": "done"}
+            if not mo.km_lot:
+                vals["km_lot"] = "LOT-%s-%s" % (
+                    (mo.name or "").replace("/", ""),
+                    fields.Date.today().strftime("%y%m%d"))
+            mo.write(vals)
         return res

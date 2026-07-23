@@ -23,11 +23,17 @@ export default async function ProductionDetail({ params, searchParams }) {
   const [mo] = await callKw("mrp.production", "read", [
     [moId],
     [
-      "name", "product_id", "product_qty", "state", "km_stage", "origin",
+      "name", "product_id", "product_qty", "state", "km_stage", "km_lot", "origin",
       "date_start", "components_availability", "qa_gates_passed",
       "create_date", "create_uid", "write_date",
     ],
   ]);
+
+  const ncrs = await searchRead(
+    "mfg.ncr", [["production_id", "=", moId]],
+    ["name", "checkpoint", "reason", "disposition", "state", "create_date"],
+    { order: "create_date desc" }
+  );
 
   const [raws, checks] = await Promise.all([
     searchRead("stock.move", [["raw_material_production_id", "=", moId]],
@@ -91,6 +97,7 @@ export default async function ProductionDetail({ params, searchParams }) {
           { label: "Product", value: mo.product_id?.[1] },
           { label: "Quantity", value: mo.product_qty },
           { label: "Stage", value: STAGE_LABEL[stage] },
+          { label: "Lot No.", value: mo.km_lot || "— (on close)", mono: true },
           { label: "Source", value: mo.origin || "—", mono: true },
           { label: "Materials", value: mo.components_availability || "—" },
           { label: "Scheduled start", value: dt(mo.date_start) },
@@ -141,6 +148,19 @@ export default async function ProductionDetail({ params, searchParams }) {
                 </div>
               );
             }
+            if (c.state === "fail") {
+              return (
+                <div className="qa-gate fail" key={c.id}>
+                  <div>
+                    <div className="g-name">{name}</div>
+                    <div className="g-sub">
+                      {c.checked_by?.[1] || "—"} · {dt(c.checked_on)} · NCR raised, re-inspection queued
+                    </div>
+                  </div>
+                  <span className="badge red">Failed ✗</span>
+                </div>
+              );
+            }
             if (c.due) {
               const pass = setQualityResult.bind(null, c.id, "pass", moId);
               const fail = setQualityResult.bind(null, c.id, "fail", moId);
@@ -173,6 +193,31 @@ export default async function ProductionDetail({ params, searchParams }) {
           })}
         </div>
       </div>
+
+      {ncrs.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <h2>Nonconformances ({ncrs.length})</h2>
+          <table>
+            <thead>
+              <tr><th>NCR</th><th>Gate</th><th>Defect</th><th>Disposition</th><th>Status</th><th>Raised</th></tr>
+            </thead>
+            <tbody>
+              {ncrs.map((n) => (
+                <tr key={n.id}>
+                  <td className="mono">
+                    <Link href="/nonconformance" className="linkcell">{n.name}</Link>
+                  </td>
+                  <td>{CHECKPOINT[n.checkpoint] || n.checkpoint}</td>
+                  <td>{n.reason || "—"}</td>
+                  <td>{n.disposition}</td>
+                  <td><span className={`badge ${n.state === "closed" ? "green" : "amber"}`}>{n.state}</span></td>
+                  <td style={{ fontSize: 12.5, color: "var(--muted)" }}>{dt(n.create_date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Shell>
   );
 }
