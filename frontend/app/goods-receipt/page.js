@@ -1,5 +1,5 @@
 import Shell from "@/components/Shell";
-import { searchRead } from "@/lib/odoo";
+import { searchRead, dt } from "@/lib/odoo";
 import { recordInwardResult, receiveToStore } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function GoodsReceipt({ searchParams }) {
   const receipts = await searchRead(
     "stock.picking",
     [["picking_type_id.code", "=", "incoming"]],
-    ["name", "partner_id", "origin", "state", "scheduled_date", "move_ids", "inward_qc_passed"],
+    ["name", "partner_id", "origin", "state", "scheduled_date", "move_ids", "inward_qc_passed", "create_date"],
     { order: "id desc" }
   );
   const pickIds = receipts.map((r) => r.id);
@@ -72,6 +72,7 @@ export default async function GoodsReceipt({ searchParams }) {
               <th>GRN</th>
               <th>Vendor</th>
               <th>Source PO</th>
+              <th>Raised</th>
               <th className="num">Items</th>
               <th>Inward QC</th>
               <th>Status</th>
@@ -81,7 +82,7 @@ export default async function GoodsReceipt({ searchParams }) {
           <tbody>
             {receipts.length === 0 && (
               <tr>
-                <td colSpan={7} className="empty">
+                <td colSpan={8} className="empty">
                   No goods receipts yet — confirm a purchase order to raise one.
                 </td>
               </tr>
@@ -98,6 +99,7 @@ export default async function GoodsReceipt({ searchParams }) {
                   <td className="mono" style={{ fontWeight: 600 }}>{r.name}</td>
                   <td>{r.partner_id?.[1] || "—"}</td>
                   <td>{r.origin || "—"}</td>
+                  <td style={{ fontSize: 12.5, color: "var(--muted)" }}>{dt(r.create_date)}</td>
                   <td className="num">{r.move_ids?.length || 0}</td>
                   <td>{inwardBadge(r)}</td>
                   <td><span className={`badge ${color}`}>{label}</span></td>

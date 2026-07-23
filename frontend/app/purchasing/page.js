@@ -50,7 +50,7 @@ export default async function Purchasing() {
               return (
                 <tr key={p.id}>
                   <td className="mono" style={{ fontWeight: 600 }}>
-                    {p.name}
+                    <Link href={`/purchasing/${p.id}`} className="linkcell">{p.name}</Link>
                   </td>
                   <td>{p.partner_id?.[1]}</td>
                   <td>{p.origin || "—"}</td>

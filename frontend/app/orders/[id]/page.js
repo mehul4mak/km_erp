@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Shell from "@/components/Shell";
 import StatusBadge from "@/components/StatusBadge";
-import { callKw, searchRead, inr } from "@/lib/odoo";
+import MetaBar from "@/components/MetaBar";
+import { callKw, searchRead, inr, dt } from "@/lib/odoo";
 import { confirmOrder, sendQuotation } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,9 @@ export default async function OrderDetail({ params, searchParams }) {
       "date_order",
       "client_order_ref",
       "order_line",
+      "create_date",
+      "create_uid",
+      "write_date",
     ],
   ]);
 
@@ -102,6 +106,24 @@ export default async function OrderDetail({ params, searchParams }) {
         <span className={`flow-step ${pos.length ? "done" : ""}`}>4 · Materials ordered</span>
       </div>
 
+      <MetaBar
+        items={[
+          { label: "Reference", value: so.name, mono: true },
+          { label: "Customer", value: so.partner_id?.[1] },
+          { label: "Status", value: <StatusBadge state={so.state} /> },
+          { label: "Customer ref", value: so.client_order_ref || "—" },
+          { label: "Order date", value: dt(so.date_order) },
+          { label: "Created", value: dt(so.create_date) },
+          { label: "Created by", value: so.create_uid?.[1] },
+          { label: "Last updated", value: dt(so.write_date) },
+          { label: "Total", value: inr(so.amount_total) },
+        ]}
+        links={[
+          ...mos.map((m) => ({ href: `/production/${m.id}`, label: m.name })),
+          ...pos.map((p) => ({ href: `/purchasing/${p.id}`, label: p.name })),
+        ]}
+      />
+
       <div className="card" style={{ marginBottom: 16 }}>
         <h2>Order Lines</h2>
         <table>
@@ -176,7 +198,9 @@ export default async function OrderDetail({ params, searchParams }) {
               )}
               {mos.map((m) => (
                 <tr key={m.id}>
-                  <td className="mono">{m.name}</td>
+                  <td className="mono">
+                    <Link href={`/production/${m.id}`} className="linkcell">{m.name}</Link>
+                  </td>
                   <td>{m.product_id?.[1]}</td>
                   <td className="num">{m.product_qty}</td>
                   <td>
@@ -212,7 +236,9 @@ export default async function OrderDetail({ params, searchParams }) {
               )}
               {pos.map((p) => (
                 <tr key={p.id}>
-                  <td className="mono">{p.name}</td>
+                  <td className="mono">
+                    <Link href={`/purchasing/${p.id}`} className="linkcell">{p.name}</Link>
+                  </td>
                   <td>{p.partner_id?.[1]}</td>
                   <td className="num">{p.order_line?.length || 0}</td>
                   <td className="num">{inr(p.amount_total)}</td>

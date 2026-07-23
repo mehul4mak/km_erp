@@ -1,5 +1,6 @@
+import Link from "next/link";
 import Shell from "@/components/Shell";
-import { searchRead } from "@/lib/odoo";
+import { searchRead, dt } from "@/lib/odoo";
 import { setQualityResult } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,16 @@ export default async function Quality() {
   const checks = await searchRead(
     "mfg.quality.check",
     [],
-    ["production_id", "product_id", "checkpoint", "state", "note", "checked_by", "checked_on"],
+    ["production_id", "product_id", "checkpoint", "state", "note", "checked_by", "checked_on", "create_date"],
     { order: "id desc" }
   );
+
+  const jobLink = (pid) =>
+    pid ? (
+      <Link href={`/production/${pid[0]}`} className="linkcell">{pid[1]}</Link>
+    ) : (
+      "—"
+    );
 
   const pending = checks.filter((c) => c.state === "pending");
   const history = checks.filter((c) => c.state !== "pending");
@@ -33,6 +41,7 @@ export default async function Quality() {
               <th>Job</th>
               <th>Product</th>
               <th>Checkpoint</th>
+              <th>Raised</th>
               <th>Inspector Notes</th>
               <th style={{ width: 190 }}>Result</th>
             </tr>
@@ -40,7 +49,7 @@ export default async function Quality() {
           <tbody>
             {pending.length === 0 && (
               <tr>
-                <td colSpan={5} className="empty">
+                <td colSpan={6} className="empty">
                   Nothing awaiting inspection.
                 </td>
               </tr>
@@ -51,12 +60,13 @@ export default async function Quality() {
               return (
                 <tr key={c.id}>
                   <td className="mono" style={{ fontWeight: 600 }}>
-                    {c.production_id?.[1]}
+                    {jobLink(c.production_id)}
                   </td>
                   <td>{c.product_id?.[1]}</td>
                   <td>
                     <span className="badge blue">{CP_LABEL[c.checkpoint]}</span>
                   </td>
+                  <td style={{ fontSize: 12.5, color: "var(--muted)" }}>{dt(c.create_date)}</td>
                   {/* One form, two submit actions — the note goes with either result */}
                   <td>
                     <input name="note" placeholder="optional note" form={`qc-${c.id}`} />
@@ -101,7 +111,7 @@ export default async function Quality() {
             )}
             {history.map((c) => (
               <tr key={c.id}>
-                <td className="mono">{c.production_id?.[1]}</td>
+                <td className="mono">{jobLink(c.production_id)}</td>
                 <td>{CP_LABEL[c.checkpoint]}</td>
                 <td>
                   <span className={`badge ${c.state === "pass" ? "green" : "red"}`}>
@@ -110,7 +120,7 @@ export default async function Quality() {
                 </td>
                 <td>{c.note || "—"}</td>
                 <td>{c.checked_by?.[1] || "—"}</td>
-                <td>{(c.checked_on || "").slice(0, 16)}</td>
+                <td>{dt(c.checked_on)}</td>
               </tr>
             ))}
           </tbody>

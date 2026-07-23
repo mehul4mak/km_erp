@@ -91,3 +91,14 @@ export const inr = (n) =>
     currency: "INR",
     maximumFractionDigits: 2,
   }).format(n || 0);
+
+// Format an Odoo datetime ("2026-07-23 19:04:04", UTC) for display.
+export const dt = (s) => {
+  if (!s) return "—";
+  const d = new Date(s.replace(" ", "T") + "Z");
+  if (isNaN(d)) return s;
+  return d.toLocaleString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+};

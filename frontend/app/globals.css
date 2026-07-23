@@ -225,6 +225,24 @@ label { font-size: 12.5px; font-weight: 600; color: var(--muted); display: block
 
 .page-actions { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
 
+/* ---------- Metadata block (generic doc metadata) ---------- */
+.metabar { margin-bottom: 16px; }
+.metabar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px 26px; }
+.metabar-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); font-weight: 700; margin-bottom: 3px; }
+.metabar-value { font-size: 13.5px; color: var(--ink); font-weight: 500; }
+.metabar-links { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.metabar-linkrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 7px; }
+.metabar-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  font-size: 12.5px; font-weight: 600; color: var(--brand-2); background: var(--surface-2);
+  transition: border-color 0.14s, background 0.14s;
+}
+.metabar-link:hover { border-color: var(--brand-2); background: #e6f0fd; }
+
+.linkcell { color: var(--brand-2); font-weight: 600; }
+.linkcell:hover { text-decoration: underline; }
+
 .empty { color: var(--muted); text-align: center; padding: 36px 0; font-size: 13.5px; }
 
 .flow-steps { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0 18px; }

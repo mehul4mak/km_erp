@@ -70,7 +70,7 @@ export default async function Production({ searchParams }) {
               return (
                 <tr key={m.id}>
                   <td className="mono" style={{ fontWeight: 600 }}>
-                    {m.name}
+                    <Link href={`/production/${m.id}`} className="linkcell">{m.name}</Link>
                   </td>
                   <td>{m.product_id?.[1]}</td>
                   <td className="num">{m.product_qty}</td>
