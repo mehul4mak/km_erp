@@ -1,0 +1,158 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MO Lifecycle + QA Gating — mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#16233b;--muted:#64748b;--line:#e4e9f1;--brand:#1976d2;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--bg:#f3f6fb;--surface:#fff}
+body{font-family:"Segoe UI",-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding:28px}
+.wrap{max-width:940px;margin:0 auto}
+h1{font-size:24px;letter-spacing:-.3px}
+.sub{color:var(--muted);font-size:14px;margin:6px 0 22px}
+.note{background:#e6f0fd;border:1px solid #cfe3fb;color:#0f4c81;border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(15,27,45,.06);padding:20px 22px;margin-bottom:18px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.hd .mo{font-weight:800;font-size:17px;font-family:ui-monospace,monospace}
+.hd .prod{color:var(--muted);font-size:13px}
+/* stepper */
+.stepper{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:6px 0 18px}
+.step{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--muted)}
+.step .dot{width:16px;height:16px;border-radius:50%;background:#cfd8e6;display:grid;place-items:center;color:#fff;font-size:10px}
+.step.done{border-color:var(--ok);color:var(--ok);background:#e7f6ec}
+.step.done .dot{background:var(--ok)}
+.step.now{border-color:var(--brand);color:#fff;background:var(--brand);box-shadow:0 4px 12px rgba(25,118,210,.3)}
+.step.now .dot{background:#fff;color:var(--brand)}
+.conn{width:26px;height:2px;background:var(--line);margin:0 2px}
+.conn.done{background:var(--ok)}
+/* action + gates */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.row{grid-template-columns:1fr}}
+.panel h3{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:10px}
+.gate{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:9px}
+.gate .g-name{font-weight:600;font-size:13.5px}
+.gate .g-sub{font-size:11.5px;color:var(--muted)}
+.gate.locked{opacity:.6;background:#f7f9fc}
+.gate.due{border-color:var(--warn);background:#fdf7ec}
+.gate.pass{border-color:var(--ok);background:#f2fbf5}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid transparent}
+.b-lock{background:#eef2f7;color:var(--muted)}
+.b-due{background:#fdf1dd;color:var(--warn);border-color:#f6e0b8}
+.b-pass{background:#e7f6ec;color:var(--ok);border-color:#c9ecd5}
+.btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-weight:600;font-size:13px;cursor:default}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.ok{background:var(--ok)}.btn.bad{background:var(--bad)}
+.btn.disabled{background:#e8edf4;color:#9aa7b8}
+.act{display:flex;gap:8px;align-items:center;margin-top:4px}
+.mini{display:flex;gap:6px}.mini .btn{padding:6px 12px;font-size:12px}
+.cap{font-size:12.5px;color:var(--muted);margin-top:10px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:8px}
+.k{display:inline-flex;gap:6px;align-items:center}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style></head><body>
+<div class="wrap">
+<h1>MO Lifecycle + QA gating — proposed</h1>
+<div class="sub">Same job (<b>WH/MO/00036 · Cooler ×10</b>) shown at each stage, so you can see how the gates unlock. Nothing here is wired yet — react first, then I build it.</div>
+
+<div class="note"><b>The rule:</b> the <b>In-Process check</b> only becomes actionable when the job is <b>In&nbsp;Progress</b>; the <b>Finished-Goods check</b> only when the job is <b>Finished</b>. <b>Mark done</b> stays locked until both pass. No more "Passed" QA on a job that hasn't started.</div>
+
+<div class="legend">
+  <span class="k"><span class="sw" style="background:#e7f6ec;border:1px solid #16a34a"></span>done</span>
+  <span class="k"><span class="sw" style="background:#1976d2"></span>current stage</span>
+  <span class="k"><span class="sw" style="background:#fff;border:1px solid #e4e9f1"></span>upcoming</span>
+  <span class="k"><span class="sw" style="background:#fdf1dd;border:1px solid #d97706"></span>QA due</span>
+  <span class="k"><span class="sw" style="background:#f7f9fc;border:1px solid #e4e9f1"></span>QA locked</span>
+</div>
+
+<!-- STAGE 1: PLANNED -->
+<div class="card">
+  <div class="hd"><div><span class="mo">WH/MO/00036</span> &nbsp;<span class="prod">Cooler ×10</span></div><span class="badge b-lock">Planned</span></div>
+  <div class="stepper">
+    <span class="step now"><span class="dot">1</span>Planned</span><span class="conn"></span>
+    <span class="step"><span class="dot">2</span>Started</span><span class="conn"></span>
+    <span class="step"><span class="dot">3</span>In Progress</span><span class="conn"></span>
+    <span class="step"><span class="dot">4</span>Finished</span><span class="conn"></span>
+    <span class="step"><span class="dot">5</span>Done</span>
+  </div>
+  <div class="act"><button class="btn">Start job →</button><span class="cap">Reserves &amp; issues components, then the floor can begin.</span></div>
+  <div class="row" style="margin-top:16px">
+    <div class="panel"><h3>Quality gates</h3>
+      <div class="gate locked"><div><div class="g-name">In-Process Check</div><div class="g-sub">unlocks when the job is In Progress</div></div><span class="badge b-lock">locked</span></div>
+      <div class="gate locked"><div><div class="g-name">Finished-Goods Check</div><div class="g-sub">unlocks when the job is Finished</div></div><span class="badge b-lock">locked</span></div>
+    </div>
+    <div class="panel"><h3>Components</h3>
+      <div class="gate"><div><div class="g-name">Outer Box (Printed)</div><div class="g-sub">need 10</div></div><span class="badge b-pass">reserved</span></div>
+      <div class="gate"><div><div class="g-name">Adapter Screw</div><div class="g-sub">need 40</div></div><span class="badge b-pass">reserved</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 3: IN PROGRESS -->
+<div class="card">
+  <div class="hd"><div><span class="mo">WH/MO/00036</span> &nbsp;<span class="prod">Cooler ×10</span></div><span class="badge b-due" style="background:#e6f0fd;color:#1976d2;border-color:#cfe3fb">In Progress</span></div>
+  <div class="stepper">
+    <span class="step done"><span class="dot">✓</span>Planned</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>Started</span><span class="conn done"></span>
+    <span class="step now"><span class="dot">3</span>In Progress</span><span class="conn"></span>
+    <span class="step"><span class="dot">4</span>Finished</span><span class="conn"></span>
+    <span class="step"><span class="dot">5</span>Done</span>
+  </div>
+  <div class="act"><button class="btn disabled">Finish job →</button><span class="cap">Locked until the In-Process check passes.</span></div>
+  <div class="row" style="margin-top:16px">
+    <div class="panel"><h3>Quality gates</h3>
+      <div class="gate due"><div><div class="g-name">In-Process Check</div><div class="g-sub">inspect the running batch now</div></div><span class="mini"><button class="btn ok">Pass</button><button class="btn bad">Fail</button></span></div>
+      <div class="gate locked"><div><div class="g-name">Finished-Goods Check</div><div class="g-sub">unlocks when the job is Finished</div></div><span class="badge b-lock">locked</span></div>
+    </div>
+    <div class="panel"><h3>Components</h3>
+      <div class="gate"><div><div class="g-name">Outer Box (Printed)</div><div class="g-sub">10 issued to job</div></div><span class="badge b-pass">consumed</span></div>
+      <div class="gate"><div><div class="g-name">Adapter Screw</div><div class="g-sub">40 issued to job</div></div><span class="badge b-pass">consumed</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 4: FINISHED -->
+<div class="card">
+  <div class="hd"><div><span class="mo">WH/MO/00036</span> &nbsp;<span class="prod">Cooler ×10</span></div><span class="badge b-due">Finished · awaiting final QA</span></div>
+  <div class="stepper">
+    <span class="step done"><span class="dot">✓</span>Planned</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>Started</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>In Progress</span><span class="conn done"></span>
+    <span class="step now"><span class="dot">4</span>Finished</span><span class="conn"></span>
+    <span class="step"><span class="dot">5</span>Done</span>
+  </div>
+  <div class="act"><button class="btn disabled">Mark done →</button><span class="cap">Locked until the Finished-Goods check passes.</span></div>
+  <div class="row" style="margin-top:16px">
+    <div class="panel"><h3>Quality gates</h3>
+      <div class="gate pass"><div><div class="g-name">In-Process Check</div><div class="g-sub">Vishal M · 23 Jul, 6:12 pm</div></div><span class="badge b-pass">Passed ✓</span></div>
+      <div class="gate due"><div><div class="g-name">Finished-Goods Check</div><div class="g-sub">inspect the finished units now</div></div><span class="mini"><button class="btn ok">Pass</button><button class="btn bad">Fail</button></span></div>
+    </div>
+    <div class="panel"><h3>Output</h3>
+      <div class="gate"><div><div class="g-name">Cooler</div><div class="g-sub">10 produced · awaiting QA to enter stock</div></div><span class="badge b-due">held</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE 5: DONE -->
+<div class="card">
+  <div class="hd"><div><span class="mo">WH/MO/00036</span> &nbsp;<span class="prod">Cooler ×10</span></div><span class="badge b-pass">Done</span></div>
+  <div class="stepper">
+    <span class="step done"><span class="dot">✓</span>Planned</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>Started</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>In Progress</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>Finished</span><span class="conn done"></span>
+    <span class="step done"><span class="dot">✓</span>Done</span>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <div class="panel"><h3>Quality gates</h3>
+      <div class="gate pass"><div><div class="g-name">In-Process Check</div><div class="g-sub">Vishal M · 23 Jul, 6:12 pm</div></div><span class="badge b-pass">Passed ✓</span></div>
+      <div class="gate pass"><div><div class="g-name">Finished-Goods Check</div><div class="g-sub">Vishal M · 23 Jul, 7:03 pm</div></div><span class="badge b-pass">Passed ✓</span></div>
+    </div>
+    <div class="panel"><h3>Output</h3>
+      <div class="gate pass"><div><div class="g-name">Cooler</div><div class="g-sub">10 received into stock</div></div><span class="badge b-pass">in stock ✓</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="note" style="background:#f7f9fc;border-color:#e4e9f1;color:#33425c">
+  <b>Open choice:</b> keep all 5 stages, or collapse <b>Started</b> into <b>In Progress</b> for a simpler 4-stage flow
+  (Planned → In Progress → Finished → Done). The QA gating logic is identical either way — tell me your preference.
+</div>
+</div></body></html>
