@@ -59,7 +59,13 @@ export async function sendQuotation(soId) {
 }
 
 export async function confirmOrder(soId) {
-  await callKw("sale.order", "action_confirm", [[soId]]);
+  try {
+    await callKw("sale.order", "action_confirm", [[soId]]);
+  } catch (e) {
+    // Surface a friendly message on the order page instead of a crash — e.g. a
+    // product missing its Manufacture route or a component without a vendor.
+    redirect(`/orders/${soId}?blocked=${encodeURIComponent(e.message || "Could not confirm the order.")}`);
+  }
   revalidatePath(`/orders/${soId}`);
   revalidatePath("/orders");
   revalidatePath("/production");
@@ -191,8 +197,17 @@ export async function createCostSheet(formData) {
   }
   if (lines.length === 0) redirect("/costsheets/new?error=empty");
 
+  // A new finished product must carry the Manufacture route (and NOT Buy),
+  // so confirming an order manufactures the shortfall instead of trying to
+  // purchase the finished mixer — matching the make-to-stock design.
+  const [mfgRoute] = await callKw("stock.route", "search_read", [
+    [["name", "ilike", "manufacture"]], ["id"],
+  ], { limit: 1 });
   const tmplId = await callKw("product.template", "create", [
-    { name, type: "product", sale_ok: true, purchase_ok: false, list_price: listPrice },
+    {
+      name, type: "product", sale_ok: true, purchase_ok: false, list_price: listPrice,
+      ...(mfgRoute ? { route_ids: [[6, 0, [mfgRoute.id]]] } : {}),
+    },
   ]);
 
   const bomVals = {

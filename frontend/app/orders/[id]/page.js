@@ -6,7 +6,7 @@ import { confirmOrder, sendQuotation } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderDetail({ params }) {
+export default async function OrderDetail({ params, searchParams }) {
   const soId = parseInt(params.id, 10);
   const [so] = await callKw("sale.order", "read", [
     [soId],
@@ -79,6 +79,12 @@ export default async function OrderDetail({ params }) {
         )}
         <StatusBadge state={so.state} />
       </div>
+      {searchParams?.blocked && (
+        <div className="card" style={{ marginBottom: 16, borderLeft: "4px solid var(--bad)" }}>
+          <b style={{ color: "var(--bad)" }}>Couldn&rsquo;t confirm this order.</b>{" "}
+          <span style={{ color: "var(--ink-soft)" }}>{searchParams.blocked}</span>
+        </div>
+      )}
       {!confirmed && so.state !== "cancel" && (
         <div style={{ color: "var(--muted)", fontSize: 13, marginBottom: 16 }}>
           Next step: <b style={{ color: "var(--ink)" }}>Confirm order</b> — this books the sale and
