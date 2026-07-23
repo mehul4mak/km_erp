@@ -44,7 +44,7 @@ export default function NavLinks() {
             }
           >
             <span className="ico">{l.ico}</span>
-            {l.label}
+            <span className="nav-label">{l.label}</span>
           </Link>
         )
       )}
