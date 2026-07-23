@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Shell from "@/components/Shell";
 import { callKw, searchRead, inr } from "@/lib/odoo";
-import { updateCostSheet, applyPrice, saveCostSheetVersion } from "@/lib/actions";
+import { updateCostSheet, applyPrice, saveCostSheetVersion, saveComponentRates } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +15,14 @@ async function bomLines(bomId) {
   const prods = await searchRead(
     "product.product",
     [["id", "in", prodIds]],
-    ["standard_price", "bom_ids"]
+    ["standard_price", "bom_ids", "qty_available"]
   );
   const info = Object.fromEntries(prods.map((p) => [p.id, p]));
   return lines.map((l) => ({
     ...l,
     cost: info[l.product_id[0]]?.standard_price || 0,
     isSubAssembly: (info[l.product_id[0]]?.bom_ids || []).length > 0,
+    inStock: (info[l.product_id[0]]?.qty_available || 0) > 0,
   }));
 }
 
@@ -56,6 +57,7 @@ export default async function CostSheetDetail({ params }) {
   const update = updateCostSheet.bind(null, bomId);
   const apply = applyPrice.bind(null, bomId);
   const saveVersion = saveCostSheetVersion.bind(null, bomId);
+  const saveRates = saveComponentRates.bind(null, bomId);
 
   return (
     <Shell
@@ -71,31 +73,58 @@ export default async function CostSheetDetail({ params }) {
       <div className="grid-2">
         <div className="card">
           <h2>Bill of Materials ({lines.length} components)</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Component</th>
-                <th className="num">Qty</th>
-                <th className="num">Rate</th>
-                <th className="num">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lines.map((l) => (
-                <tr key={l.id}>
-                  <td>
-                    {l.product_id[1]}{" "}
-                    {l.isSubAssembly && (
-                      <span className="badge blue">made in-house</span>
-                    )}
-                  </td>
-                  <td className="num">{l.product_qty}</td>
-                  <td className="num">{inr(l.cost)}</td>
-                  <td className="num">{inr(l.cost * l.product_qty)}</td>
+          <div style={{ color: "var(--muted)", fontSize: 12.5, marginBottom: 10 }}>
+            Rates auto-fill from the last purchase price (<b>FIFO</b>). Edit any rate to
+            override it manually — the sheet recalculates on save.
+          </div>
+          <form action={saveRates}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th className="num">Qty</th>
+                  <th className="num">Rate (₹)</th>
+                  <th>Source</th>
+                  <th className="num">Amount</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {lines.map((l) => (
+                  <tr key={l.id}>
+                    <td>
+                      {l.product_id[1]}{" "}
+                      {l.isSubAssembly && (
+                        <span className="badge blue">made in-house</span>
+                      )}
+                    </td>
+                    <td className="num">{l.product_qty}</td>
+                    <td className="num">
+                      <input
+                        name={`rate_${l.product_id[0]}`}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        defaultValue={l.cost}
+                        style={{ width: 90, textAlign: "right", padding: "4px 8px" }}
+                        aria-label={`Rate for ${l.product_id[1]}`}
+                      />
+                    </td>
+                    <td>
+                      {l.inStock ? (
+                        <span className="badge green">FIFO — from stock</span>
+                      ) : (
+                        <span className="badge amber">manual</span>
+                      )}
+                    </td>
+                    <td className="num">{inr(l.cost * l.product_qty)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button className="btn secondary" style={{ marginTop: 12 }}>
+              Save rates (manual override)
+            </button>
+          </form>
         </div>
 
         <div>

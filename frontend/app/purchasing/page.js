@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Shell from "@/components/Shell";
 import StatusBadge from "@/components/StatusBadge";
 import { searchRead, inr } from "@/lib/odoo";
@@ -18,6 +19,11 @@ export default async function Purchasing() {
       title="Purchasing"
       crumb="Ordering components from vendors — confirm the RFQs raised automatically when stock is short"
     >
+      <div className="page-actions">
+        <Link href="/purchasing/new" className="btn">
+          + New purchase order
+        </Link>
+      </div>
       <div className="card">
         <table>
           <thead>

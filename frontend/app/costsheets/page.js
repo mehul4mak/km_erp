@@ -49,6 +49,11 @@ export default async function CostSheets() {
       title="Cost Sheets"
       crumb="Live costing for every product — material, labour, rejection and margin in one place"
     >
+      <div className="page-actions">
+        <Link href="/costsheets/new" className="btn">
+          + New cost sheet
+        </Link>
+      </div>
       <div className="card">
         <table>
           <thead>

@@ -10,3 +10,6 @@ frontend/.env.local
 
 # Local DB backups (never commit)
 backups/
+
+# Large rendered videos (keep out of git)
+*.mp4
